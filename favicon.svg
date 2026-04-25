@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0a0a0f"/>
+      <stop offset="100%" stop-color="#1a0808"/>
+    </linearGradient>
+    <linearGradient id="fire" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0%" stop-color="#ff4400"/>
+      <stop offset="60%" stop-color="#ff8800"/>
+      <stop offset="100%" stop-color="#ffcc00"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="0.8" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Fond arrondi -->
+  <rect width="32" height="32" rx="6" fill="url(#bg)"/>
+  <!-- Bordure subtile rouge -->
+  <rect width="32" height="32" rx="6" fill="none" stroke="#ff4400" stroke-width="1" stroke-opacity="0.4"/>
+
+  <!-- Croix de viseur — cercle externe -->
+  <circle cx="16" cy="16" r="11" fill="none" stroke="#ff4400" stroke-width="1.2" stroke-opacity="0.6"/>
+  <!-- Croix de viseur — lignes -->
+  <line x1="16" y1="4" x2="16" y2="10" stroke="#ff6622" stroke-width="1.4" stroke-linecap="round"/>
+  <line x1="16" y1="22" x2="16" y2="28" stroke="#ff6622" stroke-width="1.4" stroke-linecap="round"/>
+  <line x1="4" y1="16" x2="10" y2="16" stroke="#ff6622" stroke-width="1.4" stroke-linecap="round"/>
+  <line x1="22" y1="16" x2="28" y2="16" stroke="#ff6622" stroke-width="1.4" stroke-linecap="round"/>
+
+  <!-- Cercle central glowing -->
+  <circle cx="16" cy="16" r="4" fill="url(#fire)" filter="url(#glow)"/>
+  <!-- Point central blanc -->
+  <circle cx="16" cy="16" r="1.5" fill="#fff" opacity="0.9"/>
+
+  <!-- Lettres FF en bas à droite — minuscules stylisées -->
+  <text x="21.5" y="28.5" font-family="'Arial Black',sans-serif" font-size="6" font-weight="900"
+    fill="#ff4400" letter-spacing="-0.5" opacity="0.9">FF</text>
+</svg>
