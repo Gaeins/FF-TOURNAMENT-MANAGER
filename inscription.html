@@ -244,8 +244,15 @@ function soumettre(){
     tournamentId: tid, tournamentName: _tournament.name
   };
 
-  data.pending.push(entry);
-  saveData(data, tid);
+  try {
+    data.pending.push(entry);
+    saveData(data, tid);
+  } catch(e) {
+    btn.disabled = false;
+    btn.textContent = "SOUMETTRE L'INSCRIPTION";
+    showToast('⚠ Erreur de sauvegarde — réessaie','err');
+    return;
+  }
 
   // Afficher confirmation immédiatement + envoyer email admin en arrière-plan
   const msg = _tournament.type === 'paid'
