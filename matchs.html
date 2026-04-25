@@ -1,0 +1,1046 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>CS Headshot Squad · Matchs</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script src="shared.js"></script>
+</head>
+<body>
+<button id="mute-btn" onclick="toggleMuteBtn()" title="Musique" style="position:fixed;bottom:68px;right:20px;width:42px;height:42px;border-radius:50%;background:var(--bg3);border:1px solid var(--border2);font-size:18px;cursor:pointer;z-index:9997;display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow);transition:.2s">🔊</button>
+<button id="darkmode-btn" onclick="setDarkMode(!getDarkMode())" title="Thème">☀️</button>
+
+<div class="wrap">
+  <div class="hero">
+    <div class="hero-tag">RÉSULTATS & HISTORIQUE · PUBLIC</div>
+    <div class="hero-title" id="h-title">CS <span>HEADSHOT</span></div>
+    <div class="hero-sub" id="h-sub">SQUAD · FREE FIRE</div>
+    <div class="cd-row">
+      <div class="cd-box"><div class="cd-num" id="cd-d">00</div><div class="cd-lbl">Jours</div></div>
+      <div class="cd-sep">:</div>
+      <div class="cd-box"><div class="cd-num" id="cd-h">00</div><div class="cd-lbl">Heures</div></div>
+      <div class="cd-sep">:</div>
+      <div class="cd-box"><div class="cd-num" id="cd-m">00</div><div class="cd-lbl">Min</div></div>
+      <div class="cd-sep">:</div>
+      <div class="cd-box"><div class="cd-num" id="cd-s">00</div><div class="cd-lbl">Sec</div></div>
+    </div>
+  </div>
+
+  <nav class="nav">
+    <a href="index.html"         class="nav-link"><span class="ico">🏠</span> ACCUEIL</a>
+    <a href="inscription.html"   class="nav-link"><span class="ico">📝</span> INSCRIPTION</a>
+    <a href="joueurs.html"       class="nav-link"><span class="ico">👥</span> JOUEURS</a>
+    <a href="matchs.html"        class="nav-link active"><span class="ico">🏆</span> MATCHS</a>
+    <a href="espace-joueur.html" class="nav-link"><span class="ico">🎮</span><span class="nav-text"> MON ESPACE</span></a>
+    <a href="admin.html"         class="nav-link"><span class="ico">⚙️</span> ADMIN <span class="lock">🔒</span></a>
+  </nav>
+
+  <div class="panel">
+
+    <!-- Sélecteur tournoi + badge -->
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+      <select class="fi" id="t-selector"
+        style="width:auto;margin:0;padding:7px 12px;font-size:11px;font-family:'Orbitron',sans-serif;color:var(--red)"
+        onchange="switchTournament(this.value)"></select>
+      <span id="match-count-badge"
+        style="background:rgba(255,68,0,0.12);color:#ff7744;font-size:10px;padding:4px 10px;border-radius:4px;font-family:'Orbitron',sans-serif">
+        0 MATCH
+      </span>
+      <!-- Statut du tournoi -->
+      <span id="tournament-status-badge" class="badge" style="font-size:10px"></span>
+    </div>
+
+    <!-- ═══ PANNEAU ADMIN (affiché après auth) ═══════════════════ -->
+    <div id="admin-panel" style="display:none">
+      <div class="adm-banner" style="margin-bottom:14px">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <span>⚙️ MODE ADMIN MATCHS</span>
+          <!-- Bouton déclarer tournoi terminé -->
+          <button id="btn-end-tournament" class="btn-no" style="font-size:9px;padding:6px 12px">
+            ⏹ MARQUER CE MATCH JOUÉ ✓
+          </button>
+          <button id="btn-reopen-tournament" class="btn-ok" style="font-size:9px;padding:6px 12px;display:none">
+            ↩ ROUVRIR LE TOURNOI
+          </button>
+        </div>
+        <button class="btn-secondary" onclick="closeAdminPanel()">FERMER</button>
+      </div>
+
+      <!-- Room ID du prochain match -->
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:14px">
+        <div class="sec-title" style="margin-top:0">🔑 ROOM ID DU PROCHAIN MATCH</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+          <input class="fi" id="room-id-input" placeholder="ID Room + mot de passe (ex: 12345 · pwd: abc)" style="flex:1;margin-bottom:0">
+          <input class="fi" id="next-match-input" type="datetime-local" style="flex:1;margin-bottom:0;min-width:180px" title="Heure du prochain match — ID visible 5 min avant">
+        </div>
+        <button class="btn-ok" id="btn-save-room" style="width:100%">💾 SAUVEGARDER ROOM ID</button>
+        <div id="room-status-text" style="font-size:10px;color:var(--text3);font-family:'Orbitron',sans-serif;letter-spacing:1px;margin-top:8px"></div>
+      </div>
+
+      <!-- Saisir résultat match -->
+      <div class="create-t-form">
+        <div class="create-t-title">
+          📊 SAISIR UN RÉSULTAT DE MATCH
+          <span id="edit-match-badge" style="display:none;font-size:8px;background:var(--yellow-bg);color:var(--yellow);padding:2px 8px;border-radius:3px;margin-left:8px">MODE ÉDITION</span>
+        </div>
+
+        <div class="param-grid">
+          <div>
+            <label class="fl">Round / Phase</label>
+            <input class="fi" id="match-round" placeholder="Ex: Round 1, Finale…" style="margin-bottom:0">
+          </div>
+          <div>
+            <label class="fl">Date du match</label>
+            <input class="fi" id="match-date" type="datetime-local" style="margin-bottom:0">
+          </div>
+        </div>
+        <label class="fl" style="margin-top:10px">Notes / Contexte</label>
+        <input class="fi" id="match-notes" placeholder="Ex: Map Bermuda · Météo jour · 12 squads présents">
+
+        <div class="sec-title" style="margin-top:4px">RÉSULTATS DES ÉQUIPES</div>
+        <div id="match-teams-form" style="margin-bottom:10px"></div>
+
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn-blue" id="btn-add-team" style="flex:1">+ ÉQUIPE</button>
+          <button class="btn-ok"   id="btn-save-match" style="flex:2">💾 SAUVEGARDER CE MATCH</button>
+          <button class="btn-secondary" id="btn-cancel-edit" style="display:none;flex:1">✕ ANNULER</button>
+        </div>
+        <!-- Bouton IA screenshot -->
+        <button class="btn-blue" style="width:100%;margin-top:8px;background:rgba(133,183,235,0.08);border-color:var(--blue-border);color:var(--blue)"
+          onclick="openAIModal()">
+          🤖 ANALYSER UN SCREENSHOT FREE FIRE (IA)
+        </button>
+        <div class="toast" id="match-toast"></div>
+      </div>
+
+      <!-- Réclamations en attente -->
+      <div class="sec-title">RÉCLAMATIONS EN ATTENTE <span id="claims-badge" style="color:var(--red)"></span></div>
+      <div id="pending-claims-list">
+        <div class="empty" style="font-size:9px;padding:12px">AUCUNE</div>
+      </div>
+    </div>
+
+    <!-- Bouton accès admin discret -->
+    <div id="admin-access-section" style="text-align:right;margin-bottom:12px">
+      <button class="btn-secondary" id="btn-open-admin-modal" style="font-size:9px;opacity:.6">
+        ⚙️ ACCÈS ADMIN MATCHS
+      </button>
+    </div>
+
+    <!-- ═══ ONGLETS PUBLIC ════════════════════════════════════════════ -->
+    <div class="tournament-selector" style="padding:0;background:transparent;border:none;margin-bottom:16px">
+      <div class="ts-tab active" id="tab-btn-liste"   onclick="switchTab('liste',this)">📋 RÉSULTATS</div>
+      <div class="ts-tab"        id="tab-btn-bracket" onclick="switchTab('bracket',this)">🏆 BRACKET</div>
+      <div class="ts-tab"        id="tab-btn-kills"   onclick="switchTab('kills',this)">💀 CLASSEMENT</div>
+      <div class="ts-tab"        id="tab-btn-rules"   onclick="switchTab('rules',this)">📜 RÈGLEMENT</div>
+    </div>
+
+    <!-- TAB : HISTORIQUE RÉSULTATS -->
+    <div id="tab-liste">
+      <div id="matches-list">
+        <div class="empty">AUCUN MATCH ENREGISTRÉ<br>
+          <span style="font-size:9px">Les résultats seront affichés ici en temps réel</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB : BRACKET SVG -->
+    <div id="tab-bracket" style="display:none">
+      <div id="bracket-wrap">
+        <div class="empty">AUCUN MATCH · Le bracket s'affichera dès que des matchs sont créés</div>
+      </div>
+    </div>
+
+    <!-- TAB : CLASSEMENT KILLS -->
+    <div id="tab-kills" style="display:none">
+      <div id="kills-board">
+        <div class="empty">AUCUN RÉSULTAT DISPONIBLE</div>
+      </div>
+    </div>
+
+    <!-- TAB : RÈGLEMENT -->
+    <div id="tab-rules" style="display:none">
+      <div id="rules-content">
+        <div class="empty">RÈGLEMENT NON DÉFINI<br><span style="font-size:9px">L'admin peut le configurer dans Paramètres</span></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Modal IA Screenshot (injecté dans admin-panel) -->
+<div id="ai-screenshot-modal" style="display:none;position:fixed;inset:0;background:rgba(6,6,9,.97);z-index:10000;align-items:center;justify-content:center;padding:16px">
+  <div style="background:var(--bg3);border:1px solid var(--blue-border);border-radius:14px;padding:22px;width:100%;max-width:460px;margin:auto">
+    <div style="font-family:'Orbitron',sans-serif;font-size:11px;color:var(--blue);margin-bottom:14px;letter-spacing:1px">
+      🤖 ANALYSE IA — SCREENSHOT FREE FIRE
+    </div>
+    <div style="font-size:11px;color:var(--text3);margin-bottom:12px;line-height:1.6">
+      Upload une capture d'écran des résultats du match.<br>
+      L'IA détectera automatiquement les équipes, kills et classement.
+    </div>
+    <div id="ai-preview" style="display:none;margin-bottom:12px">
+      <img id="ai-img-preview" style="max-width:100%;max-height:200px;border-radius:8px;border:1px solid var(--border)" alt="preview">
+    </div>
+    <input type="file" id="ai-file-input" accept="image/*" style="display:none" onchange="previewAIFile(this)">
+    <button class="btn-blue" style="width:100%;margin-bottom:10px" onclick="document.getElementById('ai-file-input').click()">
+      📷 CHOISIR UN SCREENSHOT
+    </button>
+    <div id="ai-status-bar" style="font-family:'Orbitron',sans-serif;font-size:9px;letter-spacing:1px;color:var(--text3);min-height:16px;margin-bottom:12px;text-align:center"></div>
+    <div id="ai-results-preview" style="display:none;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:12px;font-size:12px"></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn-ok" id="ai-apply-btn" style="flex:1;display:none" onclick="applyAIResults()">✓ APPLIQUER</button>
+      <button class="btn-secondary" style="flex:1" onclick="closeAIModal()">FERMER</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal mot de passe admin -->
+<div id="admin-modal"
+  style="display:none;position:fixed;inset:0;background:rgba(6,6,9,0.95);z-index:9998;align-items:center;justify-content:center">
+  <div class="lock-box">
+    <div class="lock-icon">🏆</div>
+    <div class="lock-title">ACCÈS ADMIN MATCHS</div>
+    <div class="lock-sub">Mot de passe organisateur</div>
+    <input class="fi" type="password" id="admin-modal-pwd" placeholder="Mot de passe" maxlength="32"
+      style="text-align:center;letter-spacing:4px">
+    <button class="btn-primary" id="btn-verify-admin">DÉVERROUILLER</button>
+    <div class="lock-err" id="admin-modal-err"></div>
+    <button class="btn-secondary" id="btn-close-modal" style="margin-top:10px;width:100%">ANNULER</button>
+  </div>
+</div>
+
+<script>
+// Sync Firebase au démarrage (données fraîches depuis le cloud)
+migrateIfNeeded();
+dbSync().then(() => {
+  migrateIfNeeded(); // re-migrer après sync Firebase
+  if(typeof renderTournaments === 'function') renderTournaments();
+  if(typeof render === 'function') render();
+});
+initDarkMode();
+// Temps réel : mise à jour automatique si l'admin modifie un tournoi
+startRealtimeSync(() => {
+  if(typeof renderTournaments === 'function') renderTournaments();
+  if(typeof render === 'function') render();
+  if(typeof renderMatches === 'function') renderMatches();
+});
+resumeGlobalMusic();
+(function(){ const b=document.getElementById('mute-btn'); if(b) b.textContent=getMuteState()?'🔇':'🔊'; })();
+
+let _tid          = getActiveTournamentId();
+let _adminAuthed  = isAuthed('admin');
+let _editingId    = null;
+let _teamRows     = [];
+
+// ── INIT ──────────────────────────────────────────────────────────
+buildSelector();
+const _initT = getTournamentById(_tid) || getSettings();
+applyHero(_initT);
+renderMatches();
+if (_adminAuthed) openAdminPanel();
+attachEvents();
+
+// ── SÉLECTEUR ─────────────────────────────────────────────────────
+function buildSelector() {
+  const sel  = document.getElementById('t-selector');
+  const list = getTournaments();
+  sel.innerHTML = list.map(t =>
+    `<option value="${t.id}" ${t.id === _tid ? 'selected' : ''}>${t.name} · ${getStatusLabel(getTournamentStatus(t)).label}</option>`
+  ).join('');
+}
+
+function switchTournament(id) {
+  _tid = id; setActiveTournamentId(id);
+  const t = getTournamentById(id);
+  if (t) applyHero(t);
+  renderMatches();
+  if (_adminAuthed) { loadRoomFields(); renderPendingClaims(); updateTournamentButtons(); }
+  // Rafraîchir l'onglet actif
+  const activeBtn = document.querySelector('#tab-btn-bracket.active, #tab-btn-kills.active, #tab-btn-rules.active');
+  if (activeBtn) {
+    if (activeBtn.id === 'tab-btn-bracket') renderBracket();
+    else if (activeBtn.id === 'tab-btn-kills') renderKillsBoard();
+    else if (activeBtn.id === 'tab-btn-rules') renderRules();
+  }
+}
+
+// ── EVENTS ────────────────────────────────────────────────────────
+function attachEvents() {
+  // Modal admin
+  document.getElementById('btn-open-admin-modal').addEventListener('click', () => {
+    document.getElementById('admin-modal').style.display = 'flex';
+    setTimeout(() => document.getElementById('admin-modal-pwd').focus(), 100);
+  });
+  document.getElementById('btn-close-modal').addEventListener('click', closeModal);
+  document.getElementById('btn-verify-admin').addEventListener('click', verifyAdmin);
+  document.getElementById('admin-modal-pwd').addEventListener('keydown', e => { if (e.key === 'Enter') verifyAdmin(); });
+
+  // Panel admin
+  document.getElementById('btn-save-room').addEventListener('click', saveRoomId);
+  document.getElementById('btn-add-team').addEventListener('click', () => addTeamRow());
+  document.getElementById('btn-save-match').addEventListener('click', saveMatchResult);
+  document.getElementById('btn-cancel-edit').addEventListener('click', cancelEdit);
+  document.getElementById('btn-end-tournament').addEventListener('click', endTournament);
+  document.getElementById('btn-reopen-tournament').addEventListener('click', reopenTournament);
+}
+
+// ── AUTH ──────────────────────────────────────────────────────────
+async function verifyAdmin() {
+  const pwd = document.getElementById('admin-modal-pwd').value;
+  if (!pwd) { document.getElementById('admin-modal-err').textContent = 'Mot de passe requis.'; return; }
+  const t = getTournamentById(_tid) || getSettings();
+  if (await checkAdminPassword(pwd, t)) {
+    _adminAuthed = true;
+    setAuth('admin');
+    closeModal();
+    openAdminPanel();
+    notify('✓ Accès admin accordé', 'ok');
+  } else {
+    document.getElementById('admin-modal-err').textContent = 'Mot de passe incorrect.';
+    document.getElementById('admin-modal-pwd').value = '';
+  }
+}
+function closeModal() {
+  document.getElementById('admin-modal').style.display = 'none';
+  document.getElementById('admin-modal-pwd').value = '';
+  document.getElementById('admin-modal-err').textContent = '';
+}
+function openAdminPanel() {
+  document.getElementById('admin-panel').style.display = 'block';
+  document.getElementById('admin-access-section').style.display = 'none';
+  loadRoomFields();
+  resetMatchForm();
+  renderPendingClaims();
+  updateTournamentButtons();
+}
+function closeAdminPanel() {
+  document.getElementById('admin-panel').style.display = 'none';
+  document.getElementById('admin-access-section').style.display = 'block';
+}
+
+// ── STATUT TOURNOI ─────────────────────────────────────────────────
+function updateTournamentButtons() {
+  const t      = getTournamentById(_tid);
+  const status = getTournamentStatus(t);
+  const badge  = document.getElementById('tournament-status-badge');
+  const sl     = getStatusLabel(status);
+
+  badge.textContent  = sl.icon + ' ' + sl.label;
+  badge.className    = 'badge badge-' + status;
+
+  // Boutons admin
+  const btnEnd    = document.getElementById('btn-end-tournament');
+  const btnReopen = document.getElementById('btn-reopen-tournament');
+  if (status === 'ended') {
+    btnEnd.style.display    = 'none';
+    btnReopen.style.display = 'inline-flex';
+  } else {
+    btnEnd.style.display    = 'inline-flex';
+    btnReopen.style.display = 'none';
+  }
+}
+function endTournament() {
+  // Marquer le dernier match non-joué comme terminé (saisir résultats si besoin)
+  const matches = getMatches(_tid);
+  if (!matches.length) { notify('⚠ Aucun match à déclarer terminé', 'err'); return; }
+  if (!confirm('Marquer le dernier match comme terminé (saisir les résultats en premier si besoin) ?')) return;
+  // Scroller vers le formulaire de saisie de résultats
+  document.getElementById('match-round').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  notify('ℹ Saisis les résultats du match puis clique 💾 SAUVEGARDER', 'info');
+}
+function reopenTournament() {
+  if (!confirm('Rouvrir ce tournoi ?')) return;
+  const t = getTournamentById(_tid); if (!t) return;
+  t.status = 'upcoming'; saveTournament(t);
+  renderMatches(); updateTournamentButtons();
+  notify('✓ Tournoi rouvert', 'ok');
+}
+
+// ── ROOM ID ───────────────────────────────────────────────────────
+function loadRoomFields() {
+  const t = getTournamentById(_tid); if (!t) return;
+  document.getElementById('room-id-input').value    = t.roomId        || '';
+  document.getElementById('next-match-input').value = t.nextMatchDate || '';
+  updateRoomStatusText(t);
+}
+function saveRoomId() {
+  const t = getTournamentById(_tid); if (!t) return;
+  t.roomId        = document.getElementById('room-id-input').value.trim();
+  t.nextMatchDate = document.getElementById('next-match-input').value;
+  saveTournament(t);
+  updateRoomStatusText(t);
+  notify('✓ Room ID sauvegardé', 'ok');
+}
+function updateRoomStatusText(t) {
+  const el = document.getElementById('room-status-text'); if (!el) return;
+  if (!t.roomId) { el.textContent = '— Aucun Room ID défini'; return; }
+  if (!t.nextMatchDate) { el.textContent = '⚠ Room ID défini — fixe la date du match pour activer la visibilité'; return; }
+  const min = Math.floor((new Date(t.nextMatchDate) - Date.now()) / 60000);
+  if (min > 5)  el.textContent = `⏳ Visible pour les joueurs dans ${min} min (5 min avant le match)`;
+  else if (min >= 0) el.textContent = `🟢 ROOM ID VISIBLE — match dans ${min} min`;
+  else el.textContent = '✓ Match en cours — Room ID toujours visible';
+}
+
+// ── SAISIE MATCH ──────────────────────────────────────────────────
+function addTeamRow(squad = '', kills = '', rank = '', isWinner = false) {
+  const rowId = 'tr-' + Date.now() + '-' + Math.random().toString(36).substr(2, 4);
+  _teamRows.push(rowId);
+
+  const data          = getData(_tid);
+  const approvedSquads = (data.approved || []).map(e => e.sq);
+
+  const div = document.createElement('div');
+  div.id = rowId;
+  div.style.cssText = 'display:grid;grid-template-columns:1fr 70px 60px auto auto;gap:6px;align-items:center;margin-bottom:6px';
+
+  const opts = approvedSquads.map(s => `<option value="${s}" ${s === squad ? 'selected' : ''}>${s}</option>`).join('');
+
+  div.innerHTML = `
+    <select class="fi" style="margin-bottom:0;font-size:12px" id="${rowId}-squad">
+      <option value="">— Équipe —</option>
+      ${opts}
+      <option value="__manual__" ${!approvedSquads.includes(squad) && squad ? 'selected' : ''}>✏️ Saisie manuelle…</option>
+    </select>
+    <input class="fi" id="${rowId}-kills" type="number" min="0" placeholder="Kills" value="${kills}"
+      style="margin-bottom:0;font-size:13px;text-align:center;padding:8px 4px">
+    <input class="fi" id="${rowId}-rank" type="number" min="1" placeholder="Rang" value="${rank}"
+      style="margin-bottom:0;font-size:13px;text-align:center;padding:8px 4px">
+    <label style="display:flex;align-items:center;gap:4px;cursor:pointer;font-size:9px;font-family:'Orbitron',sans-serif;color:var(--yellow);white-space:nowrap">
+      <input type="checkbox" id="${rowId}-winner" ${isWinner ? 'checked' : ''} style="width:15px;height:15px;accent-color:var(--yellow)"> 🏆
+    </label>
+    <button onclick="removeTeamRow('${rowId}')" class="btn-del" style="padding:6px 8px">🗑</button>`;
+
+  document.getElementById('match-teams-form').appendChild(div);
+
+  // Champ saisie manuelle
+  const sel = div.querySelector(`#${rowId}-squad`);
+  const manualInput = document.createElement('input');
+  manualInput.className = 'fi';
+  manualInput.id = `${rowId}-manual`;
+  manualInput.placeholder = 'Nom de l\'équipe';
+  manualInput.style.cssText = 'margin-bottom:0;font-size:12px;display:none;grid-column:1;margin-top:4px';
+  if (!approvedSquads.includes(squad) && squad) {
+    manualInput.value = squad;
+    manualInput.style.display = 'block';
+    sel.value = '__manual__';
+  }
+  div.appendChild(manualInput);
+
+  sel.addEventListener('change', () => {
+    manualInput.style.display = sel.value === '__manual__' ? 'block' : 'none';
+    if (sel.value === '__manual__') manualInput.focus();
+  });
+}
+
+function removeTeamRow(rowId) {
+  const el = document.getElementById(rowId);
+  if (el) el.remove();
+  _teamRows = _teamRows.filter(r => r !== rowId);
+}
+
+function getTeamRowData(rowId) {
+  const sel       = document.getElementById(rowId + '-squad');
+  const manual    = document.getElementById(rowId + '-manual');
+  const killsEl   = document.getElementById(rowId + '-kills');
+  const rankEl    = document.getElementById(rowId + '-rank');
+  const winnerEl  = document.getElementById(rowId + '-winner');
+  if (!sel) return null;
+  let squad = sel.value === '__manual__' ? (manual ? manual.value.trim() : '') : sel.value;
+  if (!squad) return null;
+  return {
+    squad,
+    kills:    parseInt(killsEl  ? killsEl.value  : 0) || 0,
+    rank:     parseInt(rankEl   ? rankEl.value   : 0) || 0,
+    isWinner: !!(winnerEl && winnerEl.checked)
+  };
+}
+
+function saveMatchResult() {
+  const round = document.getElementById('match-round').value.trim();
+  if (!round) { showMatchToast('Renseigne le round / la phase', 'err'); return; }
+
+  const results = _teamRows.map(getTeamRowData).filter(Boolean);
+  if (!results.length) { showMatchToast('Ajoute au moins une équipe', 'err'); return; }
+
+  // Auto-rank si non renseigné : trier par kills décroissant
+  if (results.every(r => !r.rank)) {
+    const sorted = [...results].sort((a, b) => b.kills - a.kills);
+    sorted.forEach((r, i) => { r.rank = i + 1; });
+  }
+
+  const match = {
+    id:          _editingId || genMatchId(),
+    tournamentId: _tid,
+    round,
+    date:         document.getElementById('match-date').value || new Date().toLocaleString('fr-FR'),
+    notes:        document.getElementById('match-notes').value.trim(),
+    results,
+    createdAt:    new Date().toISOString()
+  };
+
+  saveMatch(_tid, match);
+  renderMatches();
+  resetMatchForm();
+  showMatchToast('✅ Match enregistré !', 'ok');
+  notify('✓ Résultat sauvegardé', 'ok');
+}
+
+function editMatch(id) {
+  const m = getMatches(_tid).find(x => x.id === id); if (!m) return;
+  _editingId = id;
+  document.getElementById('match-round').value = m.round || '';
+  document.getElementById('match-date').value  = m.date  || '';
+  document.getElementById('match-notes').value = m.notes || '';
+  document.getElementById('match-teams-form').innerHTML = '';
+  _teamRows = [];
+  (m.results || []).forEach(r => addTeamRow(r.squad, r.kills, r.rank, r.isWinner));
+  document.getElementById('edit-match-badge').style.display = 'inline';
+  document.getElementById('btn-cancel-edit').style.display  = 'inline-flex';
+  document.getElementById('match-round').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function cancelEdit() {
+  resetMatchForm();
+}
+
+function resetMatchForm() {
+  _editingId = null;
+  document.getElementById('match-round').value = '';
+  document.getElementById('match-date').value  = '';
+  document.getElementById('match-notes').value = '';
+  document.getElementById('match-teams-form').innerHTML = '';
+  document.getElementById('edit-match-badge').style.display = 'none';
+  document.getElementById('btn-cancel-edit').style.display  = 'none';
+  _teamRows = [];
+  addTeamRow(); addTeamRow(); // 2 lignes vides par défaut
+}
+
+function showMatchToast(msg, type) {
+  const t = document.getElementById('match-toast');
+  t.textContent = msg; t.className = 'toast ' + type;
+  setTimeout(() => { t.className = 'toast'; }, 5000);
+}
+
+// ── RENDER MATCHS PUBLICS ─────────────────────────────────────────
+function renderMatches() {
+  const t       = getTournamentById(_tid);
+  const matches = getMatches(_tid);
+  const el      = document.getElementById('matches-list');
+  const badge   = document.getElementById('match-count-badge');
+
+  badge.textContent = matches.length + ' MATCH' + (matches.length > 1 ? 'S' : '');
+
+  // Badge statut
+  const badge2 = document.getElementById('tournament-status-badge');
+  if (badge2 && t) {
+    const status = getTournamentStatus(t);
+    const sl     = getStatusLabel(status);
+    badge2.textContent = sl.icon + ' ' + sl.label;
+    badge2.className   = 'badge badge-' + status;
+  }
+
+  if (!matches.length) {
+    el.innerHTML = '<div class="empty">AUCUN MATCH ENREGISTRÉ<br><span style="font-size:9px">Les résultats apparaîtront ici</span></div>';
+    return;
+  }
+
+  const sorted = [...matches].reverse(); // plus récent en premier
+
+  el.innerHTML = sorted.map(m => {
+    const results = [...(m.results || [])].sort((a, b) => (a.rank || 99) - (b.rank || 99));
+    const winner  = results.find(r => r.isWinner);
+
+    return `
+    <div class="adm-card" style="margin-bottom:12px">
+      <div class="adm-top">
+        <div>
+          <div style="font-family:'Orbitron',sans-serif;font-size:13px;color:var(--red)">${m.round || 'Match'}</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px">📅 ${m.date || '—'}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+          ${winner ? `<span class="badge badge-ok">🏆 ${winner.squad}</span>` : ''}
+          <span class="badge badge-ended">${results.length} équipes</span>
+          ${_adminAuthed ? `
+            <button class="btn-blue" onclick="editMatch('${m.id}')" style="font-size:8px;padding:5px 8px">✏️ MODIFIER</button>
+            <button class="btn-del" onclick="confirmDeleteMatch('${m.id}')" style="font-size:8px;padding:5px 8px">🗑</button>
+          ` : ''}
+        </div>
+      </div>
+
+      <div style="display:grid;gap:5px;margin-top:4px">
+        ${results.map((r,ri) => {
+          // Chercher infos membres dans les inscrits
+          const data  = getData(_tid);
+          const squad = [...(data.approved||[]),(data.pending||[]),...(data.rejected||[])].find(p=>p.sq===r.squad);
+          const hasMembersDetail = squad && squad.members && squad.members.filter(m=>{const n=typeof m==='object'?m.name:m;return n&&n!=='—';}).length>0;
+          const membersHtml = hasMembersDetail ? squad.members.filter(m=>{const n=typeof m==='object'?m.name:m;return n&&n!=='—';}).map(m=>`
+            <div style="font-size:11px;color:var(--text3);padding:2px 0;display:flex;gap:6px;align-items:center">
+              <span>🎮</span><span>${typeof m==='object'?m.name:m}</span>
+              ${(typeof m==='object'&&m.ffid)?`<span style="font-size:9px;color:var(--yellow);font-family:'Orbitron',sans-serif">${m.ffid}</span>`:''}
+            </div>`).join('') : '';
+          const capHtml = squad ? `<div style="font-size:11px;color:var(--text3);padding:2px 0;display:flex;gap:6px;align-items:center"><span>👑</span><span>${squad.ps}</span>${squad.ffid?`<span style="font-size:9px;color:var(--yellow);font-family:'Orbitron',sans-serif">${squad.ffid}</span>`:''}</div>`:'';
+          const expandId = 'mr-'+m.id+'-'+ri;
+
+          return `
+          <div onclick="toggleSquad('${expandId}')" style="cursor:${hasMembersDetail?'pointer':'default'}">
+            <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:6px;
+              background:${r.isWinner ? 'rgba(239,159,39,0.07)' : 'var(--card-bg)'};
+              border:1px solid ${r.isWinner ? 'rgba(239,159,39,0.25)' : 'var(--border)'};font-size:12px">
+              <div style="font-family:'Orbitron',sans-serif;font-size:10px;color:var(--text3);min-width:26px;text-align:center">
+                ${r.rank ? '#' + r.rank : '—'}
+              </div>
+              <div style="flex:1;font-weight:600;${r.isWinner ? 'color:var(--yellow)' : ''}">
+                ${r.squad}${r.isWinner ? ' 🏆' : ''}
+              </div>
+              <div style="font-family:'Orbitron',sans-serif;font-size:14px;color:var(--red)">${r.kills || 0}</div>
+              <div style="font-size:9px;color:var(--text3)">KILLS</div>
+              ${hasMembersDetail ? '<div style="font-size:10px;color:var(--text3);margin-left:4px">▼</div>' : ''}
+            </div>
+            ${(capHtml||membersHtml) ? `<div id="${expandId}" style="display:none;padding:8px 10px 2px;background:var(--card-bg);border:1px solid var(--border);border-top:none;border-radius:0 0 6px 6px">${capHtml}${membersHtml}</div>` : ''}
+          </div>`;
+        }).join('')}
+      </div>
+
+      ${m.notes ? `
+      <div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border);font-size:11px;color:var(--text3)">
+        💬 ${m.notes}
+      </div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function confirmDeleteMatch(id) {
+  if (!confirm('Supprimer ce match définitivement ?')) return;
+  deleteMatch(_tid, id);
+  renderMatches();
+  notify('✓ Match supprimé', 'ok');
+}
+
+// ── RÉCLAMATIONS ADMIN ─────────────────────────────────────────────
+function renderPendingClaims() {
+  const claims = getClaims(_tid).filter(c => c.status === 'pending');
+  const badge  = document.getElementById('claims-badge');
+  const el     = document.getElementById('pending-claims-list');
+  if (badge) badge.textContent = claims.length ? '(' + claims.length + ')' : '';
+
+  if (!claims.length) {
+    el.innerHTML = '<div class="empty" style="font-size:9px;padding:12px">AUCUNE RÉCLAMATION EN ATTENTE ✓</div>';
+    return;
+  }
+
+  el.innerHTML = claims.map(c => `
+  <div class="adm-card">
+    <div class="adm-top">
+      <div>
+        <div class="adm-ps">${c.playerName} · ${c.squad}</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:2px">${c.id} · Match : ${c.matchId || '—'} · ${c.date || ''}</div>
+      </div>
+      <span class="badge badge-pending">EN ATTENTE</span>
+    </div>
+    <div style="font-size:12px;color:var(--text2);margin-bottom:8px;line-height:1.5">${c.reason}</div>
+    ${c.proof ? `<div style="margin-bottom:10px"><img src="${c.proof}" style="max-width:100%;max-height:200px;border-radius:6px;border:1px solid var(--border)" alt="Preuve"></div>` : ''}
+    <label class="fl" style="margin-bottom:4px">Réponse au joueur (optionnel)</label>
+    <input class="fi" id="reply-${c.id}" placeholder="Ta décision et explication…" style="margin-bottom:8px">
+    <div class="adm-acts">
+      <button class="btn-ok" onclick="respondClaim('${c.id}','accepted')" style="flex:1">✓ ACCEPTER</button>
+      <button class="btn-no" onclick="respondClaim('${c.id}','rejected')" style="flex:1">✕ REFUSER</button>
+    </div>
+  </div>`).join('');
+}
+
+function respondClaim(claimId, status) {
+  const reply  = (document.getElementById('reply-' + claimId) || {}).value || '';
+  const claims = getClaims(_tid);
+  const c      = claims.find(x => x.id === claimId); if (!c) return;
+  c.status     = status; c.adminReply = reply;
+  saveClaim(_tid, c);
+  renderPendingClaims();
+  notify('✓ Réclamation ' + (status === 'accepted' ? 'acceptée' : 'refusée'), status === 'accepted' ? 'ok' : 'err');
+}
+
+function toggleSquad(id) {
+  const el = document.getElementById(id); if (!el) return;
+  const open = el.style.display !== 'none';
+  el.style.display = open ? 'none' : 'block';
+}
+
+// Refresh auto Room ID status toutes les 30s
+setInterval(() => {
+  const t = getTournamentById(_tid);
+  if (_adminAuthed && t) updateRoomStatusText(t);
+}, 30000);
+
+// ══════════════════════════════════════════════════════════════════════════════
+// ONGLETS
+// ══════════════════════════════════════════════════════════════════════════════
+function switchTab(tab, el) {
+  ['liste','bracket','kills','rules'].forEach(t => {
+    const el2 = document.getElementById('tab-' + t);
+    if (el2) el2.style.display = t === tab ? 'block' : 'none';
+  });
+  document.querySelectorAll('.ts-tab').forEach(t => t.classList.remove('active'));
+  if (el) el.classList.add('active');
+  if (tab === 'bracket') renderBracket();
+  if (tab === 'kills')   renderKillsBoard();
+  if (tab === 'rules')   renderRules();
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// BRACKET SVG — Phases éliminatoires
+// ══════════════════════════════════════════════════════════════════════════════
+function renderBracket() {
+  const matches  = getMatches(_tid);
+  const el       = document.getElementById('bracket-wrap');
+  if (!matches.length) {
+    el.innerHTML = '<div class="empty">AUCUN MATCH · Le bracket apparaîtra ici</div>';
+    return;
+  }
+
+  // Trier les matchs : top 3 (finale, demi-finale, quart) EN PREMIER
+  const priorityKeywords = ['finale','final','demi','quart','semi','3ème','3eme','bronze','3rd'];
+  const sortedMatches = [...matches].sort((a, b) => {
+    const aScore = priorityKeywords.reduce((s, kw) => s + ((a.round||'').toLowerCase().includes(kw) ? 1 : 0), 0);
+    const bScore = priorityKeywords.reduce((s, kw) => s + ((b.round||'').toLowerCase().includes(kw) ? 1 : 0), 0);
+    return bScore - aScore;
+  });
+
+  // Grouper par round dans l'ordre déclaré
+  const roundOrder = [];
+  const roundMap   = {};
+  sortedMatches.forEach(m => {
+    const r = m.round || 'Phase de groupes';
+    if (!roundMap[r]) { roundMap[r] = []; roundOrder.push(r); }
+    roundMap[r].push(m);
+  });
+
+  const CARD_W = 200, CARD_H = 54, GUTTER_X = 80, GUTTER_Y = 16;
+  const rounds = roundOrder.map(r => roundMap[r]);
+
+  // Calcul des positions verticales par round
+  const cols = rounds.map((rMatches, ci) => {
+    const prev = ci === 0 ? null : rounds[ci - 1];
+    return rMatches.map((m, mi) => {
+      let y;
+      if (!prev) {
+        y = mi * (CARD_H + GUTTER_Y);
+      } else {
+        // Centrer entre deux matchs parents potentiels
+        const step = Math.floor(prev.length / rMatches.length);
+        const base = mi * step;
+        const top  = base * (CARD_H + GUTTER_Y);
+        const bot  = Math.min(base + step - 1, prev.length - 1) * (CARD_H + GUTTER_Y);
+        y = (top + bot) / 2;
+      }
+      return { match: m, x: ci * (CARD_W + GUTTER_X), y };
+    });
+  });
+
+  const svgH = Math.max(...cols.flat().map(c => c.y + CARD_H)) + 20;
+  const svgW = cols.length * (CARD_W + GUTTER_X) + 10;
+
+  let svgContent = '';
+
+  // Connecteurs entre rounds
+  cols.forEach((col, ci) => {
+    if (ci === 0) return;
+    const prev = cols[ci - 1];
+    col.forEach((node, ni) => {
+      const step = Math.floor(prev.length / col.length);
+      const base = ni * step;
+      const srcs = prev.slice(base, base + step);
+      if (!srcs.length) return;
+      const midY = (srcs[0].y + srcs[srcs.length - 1].y + CARD_H) / 2;
+      const x1   = srcs[0].x + CARD_W;
+      const x2   = node.x;
+      const midX = (x1 + x2) / 2;
+      const destY = node.y + CARD_H / 2;
+
+      srcs.forEach(src => {
+        const srcY = src.y + CARD_H / 2;
+        svgContent += `<path d="M${x1},${srcY} C${midX},${srcY} ${midX},${midY} ${x2 - 10},${midY} L${x2 - 10},${destY} L${x2},${destY}"
+          fill="none" stroke="rgba(255,68,0,0.25)" stroke-width="1.5"/>`;
+      });
+    });
+  });
+
+  // Labels rounds
+  cols.forEach((col, ci) => {
+    const label = roundOrder[ci];
+    svgContent += `<text x="${col[0].x + CARD_W / 2}" y="12"
+      text-anchor="middle" font-family="Orbitron,sans-serif" font-size="8"
+      letter-spacing="1" fill="rgba(255,68,0,0.6)">${label.toUpperCase()}</text>`;
+  });
+
+  // Cartes matchs
+  cols.flat().forEach(({ match: m, x, y }) => {
+    const results = (m.results || []).sort((a, b) => (a.rank || 99) - (b.rank || 99));
+    const winner  = results.find(r => r.isWinner);
+    const top2    = results.slice(0, 2);
+    const isDone  = results.length > 0;
+
+    // Fond de la carte
+    svgContent += `<rect x="${x}" y="${y + 14}" width="${CARD_W}" height="${CARD_H}"
+      rx="6" fill="${isDone ? 'rgba(255,68,0,0.06)' : 'rgba(255,255,255,0.02)'}"
+      stroke="${isDone ? 'rgba(255,68,0,0.35)' : 'rgba(255,255,255,0.08)'}" stroke-width="1"/>`;
+
+    if (!isDone) {
+      svgContent += `<text x="${x + CARD_W / 2}" y="${y + 14 + CARD_H / 2 + 4}"
+        text-anchor="middle" font-family="Orbitron,sans-serif" font-size="9"
+        fill="rgba(255,255,255,0.2)">À JOUER</text>`;
+    } else if (top2.length === 0) {
+      svgContent += `<text x="${x + CARD_W / 2}" y="${y + 14 + CARD_H / 2 + 4}"
+        text-anchor="middle" font-family="Rajdhani,sans-serif" font-size="11"
+        fill="rgba(255,255,255,0.3)">Résultat à saisir</text>`;
+    } else {
+      top2.forEach((r, ri) => {
+        const ry   = y + 14 + 8 + ri * 22;
+        const isW  = r.isWinner;
+        const clr  = isW ? '#EF9F27' : 'rgba(255,255,255,0.55)';
+        const sqN  = (r.squad || '').slice(0, 18);
+
+        if (isW) {
+          svgContent += `<rect x="${x + 3}" y="${ry - 2}" width="${CARD_W - 6}" height="20"
+            rx="3" fill="rgba(239,159,39,0.08)"/>`;
+        }
+        svgContent += `
+          <text x="${x + 8}" y="${ry + 13}"
+            font-family="Rajdhani,sans-serif" font-size="12" font-weight="600" fill="${clr}">${sqN}${isW ? ' 🏆' : ''}</text>
+          <text x="${x + CARD_W - 8}" y="${ry + 13}"
+            text-anchor="end" font-family="Orbitron,sans-serif" font-size="11" fill="${isW ? '#ff7744' : 'rgba(255,255,255,0.4)'}">${r.kills || 0}</text>`;
+      });
+      if (results.length > 2) {
+        svgContent += `<text x="${x + CARD_W - 8}" y="${y + 14 + CARD_H - 4}"
+          text-anchor="end" font-family="Orbitron,sans-serif" font-size="8" fill="rgba(255,255,255,0.25)">
+          +${results.length - 2} équipes</text>`;
+      }
+    }
+  });
+
+  el.innerHTML = `
+  <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:8px">
+    <svg viewBox="0 0 ${svgW} ${svgH + 20}" width="${Math.max(svgW, 300)}" height="${svgH + 20}"
+      xmlns="http://www.w3.org/2000/svg" style="display:block">
+      ${svgContent}
+    </svg>
+  </div>
+  <div style="font-size:9px;color:var(--text3);font-family:'Orbitron',sans-serif;letter-spacing:1px;text-align:center;margin-top:8px">
+    ${matches.length} MATCH${matches.length > 1 ? 'S' : ''} · ${roundOrder.length} PHASE${roundOrder.length > 1 ? 'S' : ''}
+  </div>`;
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// CLASSEMENT KILLS
+// ══════════════════════════════════════════════════════════════════════════════
+function renderKillsBoard() {
+  const matches = getMatches(_tid);
+  const el      = document.getElementById('kills-board');
+
+  const stats = {};
+  matches.forEach(m => {
+    (m.results || []).forEach(r => {
+      if (!r.squad) return;
+      if (!stats[r.squad]) stats[r.squad] = { squad: r.squad, kills: 0, wins: 0, played: 0, bestRank: 99 };
+      stats[r.squad].kills  += (r.kills || 0);
+      stats[r.squad].played += 1;
+      if (r.isWinner) stats[r.squad].wins++;
+      if (r.rank && r.rank < stats[r.squad].bestRank) stats[r.squad].bestRank = r.rank;
+    });
+  });
+
+  const sorted = Object.values(stats).sort((a, b) =>
+    b.wins - a.wins || b.kills - a.kills
+  );
+
+  if (!sorted.length) {
+    el.innerHTML = '<div class="empty">AUCUN RÉSULTAT DISPONIBLE</div>';
+    return;
+  }
+
+  const medals = ['🥇', '🥈', '🥉'];
+  el.innerHTML = `
+  <div style="font-family:'Orbitron',sans-serif;font-size:8px;letter-spacing:1px;color:var(--text3);
+    display:grid;grid-template-columns:28px 1fr 50px 46px 56px;
+    gap:6px;padding:6px 10px;margin-bottom:4px">
+    <div>#</div><div>SQUAD</div>
+    <div style="text-align:center">KILLS</div>
+    <div style="text-align:center">WINS</div>
+    <div style="text-align:center">MATCHS</div>
+  </div>` +
+  sorted.map((s, i) => `
+  <div style="display:grid;grid-template-columns:28px 1fr 50px 46px 56px;gap:6px;align-items:center;
+    padding:10px 10px;border-radius:8px;margin-bottom:6px;
+    background:${i < 3 ? 'rgba(239,159,39,0.05)' : 'var(--card-bg)'};
+    border:1px solid ${i < 3 ? 'rgba(239,159,39,0.18)' : 'var(--border)'}">
+    <div style="font-size:${i < 3 ? '16px' : '11px'};text-align:center;font-family:'Orbitron',sans-serif;color:var(--text3)">${medals[i] || i + 1}</div>
+    <div>
+      <div style="font-family:'Orbitron',sans-serif;font-size:11px;color:var(--text)">${s.squad}</div>
+      <div style="font-size:9px;color:var(--text3);margin-top:1px">Meilleur rang : #${s.bestRank === 99 ? '—' : s.bestRank}</div>
+    </div>
+    <div style="text-align:center;font-family:'Orbitron',sans-serif;font-size:16px;font-weight:900;color:var(--red)">${s.kills}</div>
+    <div style="text-align:center;font-family:'Orbitron',sans-serif;font-size:16px;font-weight:700;color:var(--green)">${s.wins}</div>
+    <div style="text-align:center;font-family:'Orbitron',sans-serif;font-size:14px;color:var(--text3)">${s.played}</div>
+  </div>`).join('');
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// RÈGLEMENT
+// ══════════════════════════════════════════════════════════════════════════════
+function renderRules() {
+  const t    = getTournamentById(_tid);
+  const el   = document.getElementById('rules-content');
+  const rules = (t && t.rules) ? t.rules.trim() : '';
+
+  if (!rules) {
+    el.innerHTML = '<div class="empty">RÈGLEMENT NON DÉFINI<br><span style="font-size:9px">L\'admin peut le configurer dans Paramètres</span></div>';
+    return;
+  }
+
+  const lines = rules.split('\n').filter(Boolean);
+  el.innerHTML = `
+  <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:10px;padding:20px">
+    <div style="font-family:'Orbitron',sans-serif;font-size:10px;letter-spacing:2px;color:var(--red);margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border2)">
+      📜 RÈGLEMENT OFFICIEL · ${t.name.toUpperCase()}
+    </div>
+    <div style="line-height:2;font-size:13px;color:var(--text2)">
+      ${lines.map(l => {
+        const trimmed = l.trim();
+        const isBullet = trimmed.startsWith('-') || trimmed.startsWith('•') || trimmed.match(/^\d+\./);
+        return isBullet
+          ? `<div style="display:flex;gap:8px;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.04)">
+               <span style="color:var(--red);flex-shrink:0">›</span>
+               <span>${trimmed.replace(/^[-•]|\d+\./, '').trim()}</span>
+             </div>`
+          : `<div style="font-family:'Orbitron',sans-serif;font-size:9px;color:var(--text3);letter-spacing:1px;margin:10px 0 4px">${trimmed.toUpperCase()}</div>`;
+      }).join('')}
+    </div>
+  </div>`;
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// IA SCREENSHOT FREE FIRE
+// ══════════════════════════════════════════════════════════════════════════════
+let _aiParsedResults = null;
+
+function openAIModal() {
+  document.getElementById('ai-screenshot-modal').style.display = 'flex';
+  document.getElementById('ai-status-bar').textContent = '';
+  document.getElementById('ai-results-preview').style.display = 'none';
+  document.getElementById('ai-apply-btn').style.display = 'none';
+  document.getElementById('ai-preview').style.display = 'none';
+  document.getElementById('ai-file-input').value = '';
+  _aiParsedResults = null;
+}
+function closeAIModal() {
+  document.getElementById('ai-screenshot-modal').style.display = 'none';
+}
+
+function previewAIFile(input) {
+  const file = input.files[0]; if (!file) return;
+  const url  = URL.createObjectURL(file);
+  document.getElementById('ai-img-preview').src = url;
+  document.getElementById('ai-preview').style.display = 'block';
+  document.getElementById('ai-status-bar').textContent = '🤖 Prêt à analyser…';
+  document.getElementById('ai-status-bar').style.color = 'var(--blue)';
+  analyzeScreenshotAI(file);
+}
+
+async function analyzeScreenshotAI(file) {
+  const statusEl   = document.getElementById('ai-status-bar');
+  const previewEl  = document.getElementById('ai-results-preview');
+  const applyBtn   = document.getElementById('ai-apply-btn');
+
+  statusEl.textContent = '🤖 Analyse en cours…';
+  statusEl.style.color = 'var(--blue)';
+  previewEl.style.display = 'none';
+  applyBtn.style.display  = 'none';
+
+  // Contexte : noms des squads approuvées pour aider l'IA
+  const data   = getData(_tid);
+  const squads = (data.approved || []).map(e => e.sq).join(', ');
+  const round  = document.getElementById('match-round').value.trim() || 'ce match';
+
+  try {
+    const b64 = await new Promise((res, rej) => {
+      const r = new FileReader();
+      r.onload = e => res(e.target.result.split(',')[1]);
+      r.onerror = rej;
+      r.readAsDataURL(file);
+    });
+
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 800,
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'image', source: { type: 'base64', media_type: file.type, data: b64 } },
+            { type: 'text', text:
+`Tu es un assistant pour un tournoi Free Fire. Analyse ce screenshot de résultats Free Fire.
+Squads inscrites : ${squads || 'non spécifiées'}.
+Renvoie UNIQUEMENT un JSON valide, sans texte autour, sans markdown :
+{
+  "teams": [
+    {"squad": "NomSquad", "kills": 0, "rank": 1, "isWinner": true}
+  ]
+}
+- rank = classement (1=premier), isWinner=true pour le 1er uniquement.
+- Si une squad du screenshot correspond à une squad inscrite, utilise son nom exact.
+- Si tu ne vois pas de données claires, renvoie {"teams":[]}.`
+            }
+          ]
+        }]
+      })
+    });
+
+    const json = await resp.json();
+    const raw  = (json.content || []).map(c => c.text || '').join('').replace(/```json|```/g, '').trim();
+    const data2 = JSON.parse(raw);
+
+    if (!data2.teams || !data2.teams.length) {
+      statusEl.textContent = '⚠ Aucune donnée détectée — saisis manuellement';
+      statusEl.style.color = 'var(--yellow)';
+      return;
+    }
+
+    _aiParsedResults = data2.teams;
+    statusEl.textContent = `✅ ${data2.teams.length} équipe(s) détectée(s)`;
+    statusEl.style.color = 'var(--green)';
+
+    previewEl.innerHTML = data2.teams.map(t =>
+      `<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px">
+        <span style="color:${t.isWinner ? 'var(--yellow)' : 'var(--text2)'}">${t.isWinner ? '🏆 ' : '#' + (t.rank || '?') + ' '}${t.squad}</span>
+        <span style="font-family:'Orbitron',sans-serif;color:var(--red)">${t.kills} kills</span>
+      </div>`
+    ).join('');
+    previewEl.style.display = 'block';
+    applyBtn.style.display  = 'inline-block';
+
+  } catch (e) {
+    statusEl.textContent = '⚠ Erreur analyse — vérifie la connexion ou saisis manuellement';
+    statusEl.style.color = '#f25555';
+    console.error(e);
+  }
+}
+
+function applyAIResults() {
+  if (!_aiParsedResults) return;
+
+  // Vider le formulaire et repeupler avec les résultats IA
+  document.getElementById('match-teams-form').innerHTML = '';
+  _teamRows = [];
+
+  _aiParsedResults.forEach(r => {
+    addTeamRow(r.squad, r.kills, r.rank, r.isWinner);
+  });
+
+  closeAIModal();
+  notify('✅ Résultats IA appliqués — vérifie et ajuste si besoin', 'ok');
+}
+</script>
+</body>
+</html>

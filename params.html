@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>CS Headshot Squad · Paramètres</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<!-- shared.js DOIT être chargé avant tout script inline -->
+<script src="shared.js"></script>
+</head>
+<body>
+<button id="mute-btn" onclick="toggleMuteBtn()" title="Musique" style="position:fixed;bottom:68px;right:20px;width:42px;height:42px;border-radius:50%;background:var(--bg3);border:1px solid var(--border2);font-size:18px;cursor:pointer;z-index:9997;display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow);transition:.2s">🔊</button>
+<button id="darkmode-btn" onclick="setDarkMode(!getDarkMode())" title="Thème">☀️</button>
+
+<!-- LOCK SCREEN -->
+<div class="lock-screen" id="lock-screen">
+  <div class="lock-box">
+    <div class="lock-icon">🎮</div>
+    <div class="lock-title">PARAMÈTRES</div>
+    <div class="lock-sub">Accès organisateur requis</div>
+    <input class="fi" type="password" id="lock-pwd" placeholder="Mot de passe" maxlength="32"
+      style="text-align:center;letter-spacing:4px" onkeydown="if(event.key==='Enter')unlock()">
+    <button class="btn-primary" onclick="unlock()">DÉVERROUILLER</button>
+    <div class="lock-err" id="lock-err"></div>
+    <div style="margin-top:14px">
+      <a href="index.html" style="color:var(--text3);font-size:10px;font-family:'Orbitron',sans-serif;letter-spacing:1px;text-decoration:none">← Retour à l'accueil</a>
+    </div>
+  </div>
+</div>
+
+<div class="wrap" id="main-content" style="display:none">
+  <div class="hero" style="padding:18px 24px 14px">
+    <div class="hero-tag">PARAMÈTRES DU TOURNOI</div>
+    <div class="hero-title" id="h-title">CS <span>HEADSHOT</span></div>
+    <div class="hero-sub" id="h-sub">SQUAD · FREE FIRE</div>
+  </div>
+
+  <nav class="nav">
+    <a href="index.html" class="nav-link"><span class="ico">🏠</span> ACCUEIL</a>
+    <a href="inscription.html" class="nav-link"><span class="ico">📝</span> INSCRIPTION</a>
+    <a href="joueurs.html" class="nav-link"><span class="ico">👥</span> JOUEURS</a>
+    <a href="matchs.html" class="nav-link"><span class="ico">🏆</span> MATCHS</a>
+    <a href="admin.html" class="nav-link"><span class="ico">⚙️</span> ADMIN</a>
+    <a href="params.html" class="nav-link active"><span class="ico">🎮</span> PARAMÈTRES</a>
+  </nav>
+
+  <div class="panel">
+
+    <!-- Bannière sélecteur -->
+    <div class="adm-banner">
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <span style="white-space:nowrap">TOURNOI :</span>
+        <select class="fi" id="t-selector"
+          style="width:auto;margin:0;padding:5px 10px;font-size:11px;font-family:'Orbitron',sans-serif;color:var(--red)"
+          onchange="switchTournament(this.value)"></select>
+      </div>
+      <button class="btn-secondary" onclick="verrouiller()">🔒 VERROUILLER</button>
+    </div>
+
+    <!-- ═══ IDENTITÉ ════════════════════════════════════════════════ -->
+    <div class="sec-title">IDENTITÉ DU TOURNOI</div>
+    <div class="param-grid">
+      <div>
+        <label class="fl">Nom du tournoi</label>
+        <input class="fi" id="p-name" placeholder="CS HEADSHOT" style="margin-bottom:0">
+      </div>
+      <div>
+        <label class="fl">Sous-titre</label>
+        <input class="fi" id="p-sub" placeholder="SQUAD · FREE FIRE" style="margin-bottom:0">
+      </div>
+      <div>
+        <label class="fl">Date du tournoi</label>
+        <input class="fi" id="p-date" type="datetime-local" style="margin-bottom:0">
+      </div>
+      <div>
+        <label class="fl">Lieu / Serveur</label>
+        <input class="fi" id="p-lieu" placeholder="En ligne · Bénin" style="margin-bottom:0">
+      </div>
+      <div>
+        <label class="fl">Format de jeu</label>
+        <input class="fi" id="p-format" placeholder="4 vs 4 · Headshot only" style="margin-bottom:0">
+      </div>
+      <div>
+        <label class="fl">Max équipes</label>
+        <input class="fi" id="p-max" type="number" min="2" max="128" placeholder="16" style="margin-bottom:0">
+      </div>
+      <div>
+        <label class="fl">Type de tournoi</label>
+        <select class="fi" id="p-type" style="margin-bottom:0" onchange="togglePaidSection(this.value)">
+          <option value="free">🎮 Gratuit</option>
+          <option value="paid">💰 Payant</option>
+        </select>
+      </div>
+      <div>
+        <label class="fl">Statut</label>
+        <select class="fi" id="p-status" style="margin-bottom:0">
+          <option value="upcoming">⏳ À venir</option>
+          <option value="ongoing">🔴 En cours</option>
+          <option value="ended">✓ Terminé</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- ═══ TOURNOI PAYANT ══════════════════════════════════════════ -->
+    <div id="paid-section" style="display:none;margin-top:10px">
+      <div class="sec-title">INFORMATIONS DE PAIEMENT</div>
+      <div class="info-box" style="background:rgba(239,159,39,0.07);border-color:rgba(239,159,39,0.2);color:var(--yellow);margin-bottom:10px">
+        <div class="title">💰 TOURNOI PAYANT — 2 étapes</div>
+        Ces infos s'affichent aux joueurs après validation de leur candidature.
+      </div>
+      <label class="fl">Coordonnées de paiement (MoMo, Wave, CinetPay…)</label>
+      <textarea class="fi" id="p-payment" rows="3"
+        placeholder="Mobile Money : +229 XX XX XX XX — Nom : GAEINS&#10;Wave : +229 XX XX XX XX&#10;Montant : 1 000 FCFA"
+        style="resize:vertical"></textarea>
+    </div>
+
+    <!-- ═══ TYPE DE RÉCOMPENSES ═════════════════════════════════════ -->
+    <div class="sec-title">TYPE DE RÉCOMPENSES AFFICHÉES</div>
+    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:14px">
+      <div style="font-size:12px;color:var(--text2);margin-bottom:12px">Coche ce qui s'applique à ce tournoi — seules les sections cochées s'afficheront aux joueurs.</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <label style="display:flex;align-items:center;gap:10px;padding:12px;border-radius:7px;background:var(--card-bg);border:1px solid var(--border);cursor:pointer">
+          <input type="checkbox" id="p-show-prize" style="width:18px;height:18px;accent-color:var(--yellow)">
+          <div>
+            <div style="font-family:'Orbitron',sans-serif;font-size:10px;color:var(--yellow)">💰 PRIZE POOL</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:2px">Récompenses en argent réel (FCFA)</div>
+          </div>
+        </label>
+        <label style="display:flex;align-items:center;gap:10px;padding:12px;border-radius:7px;background:var(--card-bg);border:1px solid var(--border);cursor:pointer">
+          <input type="checkbox" id="p-show-digital" style="width:18px;height:18px;accent-color:var(--blue)">
+          <div>
+            <div style="font-family:'Orbitron',sans-serif;font-size:10px;color:var(--blue)">💎 RÉCOMPENSES DIGITALES</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:2px">Diamants / Booyah Pass / Abonnements</div>
+          </div>
+        </label>
+      </div>
+    </div>
+
+    <!-- ═══ PRIZE POOL ══════════════════════════════════════════════ -->
+    <div class="sec-title">PRIZE POOL</div>
+    <div class="param-grid">
+      <div>
+        <label class="fl">🥇 1ère place</label>
+        <input class="fi" id="p-p1" placeholder="300 000 FCFA" style="margin-bottom:0">
+      </div>
+      <div>
+        <label class="fl">🥈 2ème place</label>
+        <input class="fi" id="p-p2" placeholder="150 000 FCFA" style="margin-bottom:0">
+      </div>
+      <div>
+        <label class="fl">🥉 3ème place</label>
+        <input class="fi" id="p-p3" placeholder="50 000 FCFA" style="margin-bottom:0">
+      </div>
+      <div>
+        <label class="fl">💰 Total prize pool</label>
+        <input class="fi" id="p-pt" placeholder="500 000 FCFA" style="margin-bottom:0">
+      </div>
+    </div>
+
+    <!-- ═══ RÉCOMPENSES DIGITALES FREE FIRE ════════════════════════ -->
+    <div class="sec-title">RÉCOMPENSES DIGITALES FREE FIRE</div>
+    <div class="info-box" style="margin-bottom:12px">
+      <div class="title">💎 RÉCOMPENSES IN-GAME PAR RANG</div>
+      Schéma : Rang → Type → Quantité → Tarif. Les joueurs voient ce tableau dans leur espace.
+    </div>
+    <div id="rewards-list"></div>
+    <button class="btn-blue" id="add-reward-btn" style="width:100%;margin-bottom:14px">
+      ➕ AJOUTER UNE RÉCOMPENSE
+    </button>
+
+    <!-- ═══ STATS AFFICHÉES ════════════════════════════════════════ -->
+    <div class="sec-title">STATISTIQUES AFFICHÉES</div>
+    <div class="param-grid">
+      <div>
+        <label class="fl">Max Kills</label>
+        <input class="fi" id="p-k" type="number" placeholder="32" style="margin-bottom:0">
+      </div>
+      <div>
+        <label class="fl">Nb Squads</label>
+        <input class="fi" id="p-sq" type="number" placeholder="16" style="margin-bottom:0">
+      </div>
+      <div>
+        <label class="fl">Headshot Rate (%)</label>
+        <input class="fi" id="p-hs" type="number" placeholder="85" style="margin-bottom:0">
+      </div>
+      <div>
+        <label class="fl">Rounds</label>
+        <input class="fi" id="p-r" type="number" placeholder="5" style="margin-bottom:0">
+      </div>
+    </div>
+
+    <!-- ═══ RÈGLEMENT ══════════════════════════════════════════════ -->
+    <div class="sec-title">RÈGLEMENT DU TOURNOI</div>
+    <textarea class="fi" id="p-rules" rows="4"
+      placeholder="Ex: - Headshot only&#10;- Pas de hack ou cheats&#10;- Capitaine présent 15 min avant&#10;- Toute déconnexion volontaire = disqualification"
+      style="resize:vertical"></textarea>
+
+    <!-- ═══ COORDONNÉES & LIENS ═════════════════════════════════════ -->
+    <div class="sec-title">COORDONNÉES & LIENS</div>
+    <div class="param-grid">
+      <div>
+        <label class="fl">📞 WhatsApp admin</label>
+        <input class="fi" id="p-phone" placeholder="+229 XX XX XX XX" style="margin-bottom:0">
+      </div>
+      <div>
+        <label class="fl">📧 Email admin</label>
+        <input class="fi" id="p-cemail" type="email" placeholder="contact@example.com" style="margin-bottom:0">
+      </div>
+      <div style="grid-column:1/-1">
+        <label class="fl">🔗 Lien "Nous rejoindre" (Discord, WhatsApp group…)</label>
+        <input class="fi" id="p-join" placeholder="https://discord.gg/..." style="margin-bottom:0">
+      </div>
+    </div>
+
+    <!-- ═══ MUSIQUE DE FOND ═════════════════════════════════════════ -->
+    <div class="sec-title">🎵 MUSIQUE DE FOND</div>
+
+    <!-- Statut musique actuelle -->
+    <div id="music-current-box" style="display:none;background:rgba(93,202,165,0.07);border:1px solid var(--green-border);border-radius:8px;padding:12px 16px;margin-bottom:12px">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
+        <div>
+          <div style="font-family:'Orbitron',sans-serif;font-size:9px;color:var(--green);letter-spacing:2px;margin-bottom:4px">🎵 MUSIQUE ACTIVE</div>
+          <div id="music-current-name" style="font-size:12px;color:var(--text2)">—</div>
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <button class="btn-ok" id="music-test-btn" style="padding:6px 12px;font-size:9px">▶ TESTER</button>
+          <button class="btn-del" id="music-stop-btn" style="padding:6px 10px;font-size:9px">⏹ STOP</button>
+          <button class="btn-del" id="music-remove-btn" style="padding:6px 10px;font-size:9px;color:var(--red-soft)">✕ SUPPRIMER</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Option 1 : Upload local -->
+    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:10px">
+      <div style="font-family:'Orbitron',sans-serif;font-size:9px;color:var(--text3);letter-spacing:2px;margin-bottom:10px">OPTION 1 — TÉLÉVERSER UN FICHIER (MP3, OGG, WAV)</div>
+      <div style="display:flex;gap:8px;align-items:stretch;flex-wrap:wrap">
+        <label style="flex:1;min-width:160px;cursor:pointer">
+          <div class="fi" style="margin-bottom:0;cursor:pointer;display:flex;align-items:center;gap:8px;color:var(--text3);height:100%">
+            📁 <span id="music-file-name">Choisir un fichier…</span>
+          </div>
+          <input type="file" id="music-file-input" accept="audio/mp3,audio/mpeg,audio/ogg,audio/wav,audio/*" style="display:none">
+        </label>
+        <button class="btn-ok" id="music-upload-btn" style="min-width:100px;opacity:.5;cursor:not-allowed" disabled>💾 UPLOADER</button>
+      </div>
+      <div id="music-upload-progress" style="font-size:10px;color:var(--text3);margin-top:8px;font-family:'Orbitron',sans-serif;min-height:16px"></div>
+    </div>
+
+    <!-- Option 2 : URL directe -->
+    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:14px">
+      <div style="font-family:'Orbitron',sans-serif;font-size:9px;color:var(--text3);letter-spacing:2px;margin-bottom:10px">OPTION 2 — URL DIRECTE VERS UN FICHIER AUDIO</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <input class="fi" id="p-music-url" placeholder="https://exemple.com/musique.mp3" style="flex:1;margin-bottom:0">
+        <button class="btn-ok" id="music-url-save-btn" style="min-width:100px">💾 UTILISER</button>
+      </div>
+      <div style="font-size:10px;color:var(--text3);margin-top:6px">Lien direct Google Drive (partage public), Dropbox, SoundCloud raw, etc.</div>
+    </div>
+
+    <!-- ═══ EMAIL ══════════════════════════════════════════════════ -->
+    <div class="sec-title">CONFIGURATION EMAIL (EmailJS)</div>
+    <div class="info-box">
+      <div class="title">📧 EMAILS AUTOMATIQUES</div>
+      1. Compte gratuit sur <strong>emailjs.com</strong><br>
+      2. Service Gmail ou Outlook<br>
+      3. Template avec variables : <code>to_email</code>, <code>to_name</code>, <code>squad_name</code>, <code>ref_code</code>, <code>ff_id</code>, <code>tournament_name</code><br>
+      4. Dans <strong>shared.js</strong> → remplis <code>EMAIL_CONFIG</code> → <code>enabled: true</code>
+      <div id="email-status" style="margin-top:8px;font-size:11px;font-family:'Orbitron',sans-serif;letter-spacing:1px"></div>
+    </div>
+
+    <!-- ═══ DANGER ════════════════════════════════════════════════ -->
+    <div class="sec-title" style="color:#f09595;border-bottom-color:rgba(226,75,74,0.15)">ZONE DANGEREUSE</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px">
+      <button class="btn-no" id="reset-data-btn" style="flex:1;min-width:140px">🗑 RESET INSCRIPTIONS</button>
+      <button class="btn-del" id="reset-all-btn" style="flex:1;min-width:140px">⚠ RESET COMPLET</button>
+    </div>
+
+    <!-- ═══ SAVE ═══════════════════════════════════════════════════ -->
+    <button class="param-save" id="save-btn">SAUVEGARDER LES PARAMÈTRES ✓</button>
+    <div class="toast" id="toast"></div>
+
+  </div><!-- /panel -->
+</div><!-- /wrap -->
+
+<script>
+// ════════════════════════════════════════════════════════════════════
+// Tout le JS ici — shared.js est déjà chargé en <head>
+// ════════════════════════════════════════════════════════════════════
+// Sync Firebase au démarrage
+migrateIfNeeded();
+dbSync().then(() => { migrateIfNeeded(); });
+initDarkMode();
+resumeGlobalMusic();
+(function(){ const b=document.getElementById('mute-btn'); if(b) b.textContent=getMuteState()?'🔇':'🔊'; })();
+
+let _tid = getActiveTournamentId();
+let _rewards = [];
+let _pendingMusicFile = null;
+let _testAudio = null;
+
+// ── AUTH ──────────────────────────────────────────────────────────
+async function unlock() {
+  const pwd = document.getElementById('lock-pwd').value;
+  if (!pwd) { document.getElementById('lock-err').textContent = 'Mot de passe requis.'; return; }
+  const t = getTournamentById(_tid) || getSettings();
+  if (await checkAdminPassword(pwd, t)) {
+    setAuth('params');
+    document.getElementById('lock-screen').style.display = 'none';
+    document.getElementById('main-content').style.display = 'block';
+    init();
+    notify('✓ Accès autorisé', 'ok');
+  } else {
+    document.getElementById('lock-err').textContent = 'Mot de passe incorrect.';
+    document.getElementById('lock-pwd').value = '';
+  }
+}
+function verrouiller() { clearAuth('params'); location.href = 'index.html'; }
+
+function init() {
+  buildSelector();
+  loadForm();
+  attachEvents();
+  checkEmailStatus();
+}
+
+// Auto-login si déjà auth
+(function () {
+  if (isAuthed('params')) {
+    document.getElementById('lock-screen').style.display = 'none';
+    document.getElementById('main-content').style.display = 'block';
+    init();
+  }
+})();
+
+// ── SÉLECTEUR TOURNOI ─────────────────────────────────────────────
+function buildSelector() {
+  const sel = document.getElementById('t-selector');
+  const list = getTournaments();
+  if (!list.length) return;
+  sel.innerHTML = list.map(t =>
+    `<option value="${t.id}" ${t.id === _tid ? 'selected' : ''}>${t.name}</option>`
+  ).join('');
+}
+
+function switchTournament(id) {
+  _tid = id;
+  setActiveTournamentId(id);
+  loadForm();
+  applyHero(getTournamentById(id));
+}
+
+// ── CHARGER FORMULAIRE ─────────────────────────────────────────────
+function loadForm() {
+  const t = getTournamentById(_tid) || getDefaultTournament();
+
+  // Helper sécurisé
+  const setVal = (id, val) => {
+    const el = document.getElementById(id);
+    if (el) el.value = (val !== null && val !== undefined) ? String(val) : '';
+  };
+
+  setVal('p-name',   t.name);
+  setVal('p-sub',    t.sub);
+  setVal('p-date',   t.date || '');
+  setVal('p-lieu',   t.lieu);
+  setVal('p-format', t.format);
+  setVal('p-max',    t.maxTeams);
+  setVal('p-p1',     t.p1);
+  setVal('p-p2',     t.p2);
+  setVal('p-p3',     t.p3);
+  setVal('p-pt',     t.pt);
+  setVal('p-k',      t.kills);
+  setVal('p-sq',     t.squads);
+  setVal('p-hs',     t.hs);
+  setVal('p-r',      t.rounds);
+  setVal('p-phone',   t.contactPhone  || '');
+  setVal('p-cemail',  t.contactEmail  || '');
+  setVal('p-join',    t.joinLink      || '');
+  setVal('p-rules',   t.rules         || '');
+  setVal('p-payment', t.paymentInfo   || '');
+
+  const typeEl   = document.getElementById('p-type');
+  const statusEl = document.getElementById('p-status');
+  if (typeEl)   typeEl.value   = t.type   || 'free';
+  if (statusEl) statusEl.value = t.status || 'upcoming';
+
+  // Cases à cocher récompenses
+  const prizeEl   = document.getElementById('p-show-prize');
+  const digitalEl = document.getElementById('p-show-digital');
+  if (prizeEl)   prizeEl.checked   = t.showPrize   !== false; // par défaut coché
+  if (digitalEl) digitalEl.checked = t.showDigital !== false;
+
+  togglePaidSection(t.type);
+  refreshMusicDisplay(t);
+
+  // URL si non-local
+  setVal('p-music-url', (t.music && t.music !== '__local__') ? t.music : '');
+
+  // Récompenses
+  _rewards = JSON.parse(JSON.stringify(t.rewards || getDefaultRewards()));
+  renderRewards();
+
+  // Mettre à jour le hero de la page
+  applyHero(t);
+}
+
+// ── ÉVÉNEMENTS (tous attachés ICI pour éviter tout problème de timing) ───────
+function attachEvents() {
+
+  // Bouton SAUVEGARDER
+  document.getElementById('save-btn').addEventListener('click', sauvegarder);
+
+  // Bouton AJOUTER RÉCOMPENSE
+  document.getElementById('add-reward-btn').addEventListener('click', addReward);
+
+  // Upload fichier audio — sélection
+  document.getElementById('music-file-input').addEventListener('change', function () {
+    const file = this.files[0];
+    if (!file) return;
+    _pendingMusicFile = file;
+    const kb = Math.round(file.size / 1024);
+    document.getElementById('music-file-name').textContent = file.name + ' (' + kb + ' KB)';
+    const btn = document.getElementById('music-upload-btn');
+    btn.disabled = false;
+    btn.style.opacity = '1';
+    btn.style.cursor = 'pointer';
+    document.getElementById('music-upload-progress').textContent =
+      kb > 4000 ? '⚠ Fichier volumineux — risque de dépassement localStorage' : '';
+  });
+
+  // Upload fichier audio — bouton UPLOADER
+  document.getElementById('music-upload-btn').addEventListener('click', async function () {
+    if (!_pendingMusicFile) { notify('⚠ Sélectionne un fichier', 'err'); return; }
+    const prog = document.getElementById('music-upload-progress');
+    prog.textContent = '⏳ Encodage en cours…';
+    this.disabled = true;
+
+    try {
+      const result = await saveMusicFile(_pendingMusicFile, _tid);
+      if (result) {
+        prog.textContent = '✅ ' + _pendingMusicFile.name + ' — sauvegardé !';
+        _pendingMusicFile = null;
+        document.getElementById('music-file-name').textContent = 'Choisir un fichier…';
+        this.style.opacity = '0.5'; this.style.cursor = 'not-allowed';
+        refreshMusicDisplay(getTournamentById(_tid));
+        notify('✓ Musique uploadée avec succès', 'ok');
+      } else {
+        prog.textContent = '⚠ Échec — fichier trop lourd pour localStorage (max ~4 MB)';
+        notify('⚠ Upload échoué', 'err');
+        this.disabled = false;
+      }
+    } catch (e) {
+      prog.textContent = '⚠ Erreur : ' + e.message;
+      this.disabled = false;
+    }
+  });
+
+  // URL musique — bouton UTILISER
+  document.getElementById('music-url-save-btn').addEventListener('click', function () {
+    const url = document.getElementById('p-music-url').value.trim();
+    const t = getTournamentById(_tid);
+    if (!t) return;
+    if (url) {
+      t.music = url;
+      t.musicName = url.length > 50 ? url.substring(0, 50) + '…' : url;
+    } else {
+      t.music = ''; t.musicName = '';
+    }
+    saveTournament(t);
+    refreshMusicDisplay(t);
+    notify(url ? '✓ URL musique sauvegardée' : '✓ Musique supprimée', 'ok');
+  });
+
+  // TESTER la musique actuelle
+  document.getElementById('music-test-btn').addEventListener('click', function () {
+    const t = getTournamentById(_tid);
+    const src = getMusicSrc(t);
+    if (!src) { notify('⚠ Aucune musique configurée', 'err'); return; }
+    if (_testAudio) { _testAudio.pause(); _testAudio = null; }
+    _testAudio = new Audio(src);
+    _testAudio.volume = 0.5;
+    _testAudio.play()
+      .then(() => notify('🎵 Lecture en cours… (clique STOP pour arrêter)', 'ok'))
+      .catch(e => notify('⚠ Impossible de lire — ' + e.message, 'err'));
+  });
+
+  // STOP
+  document.getElementById('music-stop-btn').addEventListener('click', function () {
+    if (_testAudio) { _testAudio.pause(); _testAudio = null; }
+    stopMusicGlobal();
+    notify('⏹ Musique arrêtée', 'ok');
+  });
+
+  // SUPPRIMER musique
+  document.getElementById('music-remove-btn').addEventListener('click', function () {
+    if (!confirm('Supprimer la musique de fond de ce tournoi ?')) return;
+    if (_testAudio) { _testAudio.pause(); _testAudio = null; }
+    stopMusicGlobal();
+    localStorage.removeItem('hsq-music-' + _tid);
+    const t = getTournamentById(_tid);
+    if (t) { t.music = ''; t.musicName = ''; saveTournament(t); }
+    refreshMusicDisplay(t);
+    document.getElementById('p-music-url').value = '';
+    notify('✓ Musique supprimée', 'ok');
+  });
+
+  // Reset inscriptions
+  document.getElementById('reset-data-btn').addEventListener('click', function () {
+    if (!confirm('⚠️ Supprimer TOUTES les inscriptions de ce tournoi ?')) return;
+    saveData({ pending: [], approved: [], rejected: [] }, _tid);
+    notify('✓ Inscriptions effacées', 'ok');
+  });
+
+  // Reset complet
+  document.getElementById('reset-all-btn').addEventListener('click', function () {
+    if (!confirm('⚠️ RESET COMPLET : supprimer inscriptions ET paramètres ?')) return;
+    saveData({ pending: [], approved: [], rejected: [] }, _tid);
+    localStorage.removeItem('hsq-music-' + _tid);
+    const def = getDefaultTournament(); def.id = _tid; saveTournament(def);
+    loadForm();
+    notify('✓ Reset effectué', 'ok');
+    setTimeout(() => location.reload(), 600);
+  });
+}
+
+// ── AFFICHAGE MUSIQUE ─────────────────────────────────────────────
+function refreshMusicDisplay(t) {
+  const box    = document.getElementById('music-current-box');
+  const nameEl = document.getElementById('music-current-name');
+  if (!t || !t.music) {
+    box.style.display = 'none';
+    return;
+  }
+  box.style.display = 'block';
+  nameEl.textContent = t.musicName || (t.music === '__local__' ? 'Fichier local' : t.music.substring(0, 60));
+}
+
+// ── SECTION PAIEMENT ──────────────────────────────────────────────
+function togglePaidSection(type) {
+  const sec = document.getElementById('paid-section');
+  if (sec) sec.style.display = (type === 'paid') ? 'block' : 'none';
+}
+
+// ── RÉCOMPENSES ────────────────────────────────────────────────────
+// Approche : pas d'onchange inline — on lit les valeurs au moment de sauvegarder
+// Les inputs ont des data-id et data-field pour identification
+
+function renderRewards() {
+  const el = document.getElementById('rewards-list');
+  if (!_rewards.length) {
+    el.innerHTML = '<div class="empty" style="font-size:9px;padding:12px;margin-bottom:8px">Aucune récompense — clique ➕ pour en ajouter</div>';
+    return;
+  }
+
+  el.innerHTML = _rewards.map((r, i) => `
+  <div class="reward-row" data-idx="${i}" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:8px">
+    <div style="display:flex;align-items:flex-start;gap:8px;flex-wrap:wrap">
+
+      <!-- Rang -->
+      <div style="min-width:36px;padding-top:8px;text-align:center">
+        <div style="font-family:'Orbitron',sans-serif;font-size:11px;color:var(--red);font-weight:900">${r.rank}</div>
+        <div style="font-size:8px;color:var(--text3)">RANG</div>
+      </div>
+
+      <!-- Détails -->
+      <div style="flex:1;min-width:160px;display:grid;gap:6px">
+        <input class="fi" data-idx="${i}" data-field="rankLabel"
+          placeholder="Label (ex: 1ère place)" value="${escHtml(r.rankLabel || '')}"
+          style="margin-bottom:0;font-size:12px">
+        <select class="fi" data-idx="${i}" data-field="type" style="margin-bottom:0;font-size:12px">
+          ${REWARD_TYPES.map(rt =>
+            `<option value="${rt.value}" ${rt.value === r.type ? 'selected' : ''}>${rt.icon} ${rt.label}</option>`
+          ).join('')}
+        </select>
+        ${r.type === 'custom' ? `
+        <input class="fi" data-idx="${i}" data-field="note"
+          placeholder="Description de la récompense" value="${escHtml(r.note || '')}"
+          style="margin-bottom:0;font-size:11px">` : ''}
+      </div>
+
+      <!-- Quantité -->
+      <div style="min-width:72px">
+        <label class="fl" style="font-size:8px;margin-bottom:4px">QTÉ</label>
+        <input class="fi" type="number" min="1" data-idx="${i}" data-field="qty"
+          value="${r.qty || 1}" style="margin-bottom:0;font-size:13px;text-align:center;padding:8px 6px">
+      </div>
+
+      <!-- Tarif -->
+      <div style="min-width:96px">
+        <label class="fl" style="font-size:8px;margin-bottom:4px">TARIF (FCFA)</label>
+        <input class="fi" type="number" min="0" data-idx="${i}" data-field="unitPrice"
+          value="${r.unitPrice || 0}" style="margin-bottom:0;font-size:13px;text-align:center;padding:8px 6px">
+      </div>
+
+      <!-- Actions -->
+      <div style="display:flex;flex-direction:column;gap:4px;padding-top:20px">
+        <button class="btn-del" data-action="remove" data-idx="${i}" style="padding:6px 8px">🗑</button>
+        ${i > 0 ? `<button class="btn-secondary" data-action="up" data-idx="${i}" style="padding:4px 8px;font-size:10px">▲</button>` : ''}
+        ${i < _rewards.length - 1 ? `<button class="btn-secondary" data-action="down" data-idx="${i}" style="padding:4px 8px;font-size:10px">▼</button>` : ''}
+      </div>
+    </div>
+  </div>`).join('');
+
+  // Délégation d'événements sur le container — UNE SEULE fois
+  el.onclick = function (e) {
+    const btn = e.target.closest('button[data-action]');
+    if (!btn) return;
+    const idx = parseInt(btn.dataset.idx);
+    const action = btn.dataset.action;
+    // Sync avant toute modification
+    syncRewardsFromDOM();
+    if (action === 'remove') {
+      _rewards.splice(idx, 1);
+    } else if (action === 'up' && idx > 0) {
+      [_rewards[idx], _rewards[idx - 1]] = [_rewards[idx - 1], _rewards[idx]];
+    } else if (action === 'down' && idx < _rewards.length - 1) {
+      [_rewards[idx], _rewards[idx + 1]] = [_rewards[idx + 1], _rewards[idx]];
+    }
+    // Re-numéroter les rangs
+    _rewards.forEach((r, i) => { if (!r.rankLabel || r.rankLabel.match(/^\d/)) r.rank = i + 1; });
+    renderRewards();
+  };
+
+  // Quand le type change → re-render pour afficher/cacher champ custom
+  el.addEventListener('change', function (e) {
+    const sel = e.target.closest('select[data-field="type"]');
+    if (!sel) return;
+    syncRewardsFromDOM();
+    renderRewards();
+  });
+}
+
+// Lire les valeurs actuelles du DOM dans _rewards (sans re-render)
+function syncRewardsFromDOM() {
+  const el = document.getElementById('rewards-list');
+  el.querySelectorAll('[data-idx][data-field]').forEach(input => {
+    const idx   = parseInt(input.dataset.idx);
+    const field = input.dataset.field;
+    if (!_rewards[idx]) return;
+    const val = input.value;
+    if (field === 'qty' || field === 'unitPrice' || field === 'rank') {
+      _rewards[idx][field] = parseInt(val) || 0;
+    } else {
+      _rewards[idx][field] = val;
+    }
+  });
+}
+
+function addReward() {
+  syncRewardsFromDOM();
+  const nextRank = _rewards.length ? Math.max(..._rewards.map(r => r.rank || 0)) + 1 : 1;
+  _rewards.push({
+    id: 'r' + Date.now(),
+    rank: nextRank,
+    rankLabel: nextRank + 'ème place',
+    type: '500d',
+    qty: 1,
+    unitPrice: 0,
+    note: ''
+  });
+  renderRewards();
+  // Scroll vers la nouvelle récompense
+  const el = document.getElementById('rewards-list');
+  el.lastElementChild && el.lastElementChild.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ── SAUVEGARDER ────────────────────────────────────────────────────
+async function sauvegarder() {
+  const get = id => { const el = document.getElementById(id); return el ? el.value.trim() : ''; };
+  const getNum = id => { const el = document.getElementById(id); return el ? (parseInt(el.value) || 0) : 0; };
+
+  const t = getTournamentById(_tid) || getDefaultTournament();
+
+  t.name        = get('p-name')   || t.name;
+  t.sub         = get('p-sub')    || t.sub;
+  t.date        = get('p-date');
+  t.lieu        = get('p-lieu');
+  t.format      = get('p-format');
+  t.maxTeams    = getNum('p-max') || 16;
+  t.p1          = get('p-p1');
+  t.p2          = get('p-p2');
+  t.p3          = get('p-p3');
+  t.pt          = get('p-pt');
+  t.kills       = getNum('p-k');
+  t.squads      = getNum('p-sq');
+  t.hs          = getNum('p-hs');
+  t.rounds      = getNum('p-r');
+  t.contactPhone = get('p-phone');
+  t.contactEmail = get('p-cemail');
+  t.joinLink    = get('p-join');
+  t.rules       = get('p-rules');
+  t.paymentInfo = get('p-payment');
+
+  const typeEl   = document.getElementById('p-type');
+  const statusEl = document.getElementById('p-status');
+  if (typeEl)   t.type   = typeEl.value;
+  if (statusEl) t.status = statusEl.value;
+
+  const prizeEl   = document.getElementById('p-show-prize');
+  const digitalEl = document.getElementById('p-show-digital');
+  if (prizeEl)   t.showPrize   = prizeEl.checked;
+  if (digitalEl) t.showDigital = digitalEl.checked;
+
+  // Champ mot de passe admin
+  const newPwd = get('p-admin-pwd');
+  if (newPwd) {
+    t.adminHash = await hashPassword(newPwd);
+  }
+
+  // Sync récompenses depuis le DOM
+  syncRewardsFromDOM();
+  t.rewards = _rewards;
+
+  saveTournament(t);
+  applyHero(t);
+  showToast('✅ Paramètres de "' + t.name + '" sauvegardés !', 'ok');
+  notify('✓ Paramètres mis à jour', 'ok');
+}
+
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'toast ' + type;
+  setTimeout(() => { t.className = 'toast'; }, 8000);
+}
+
+function checkEmailStatus() {
+  const el = document.getElementById('email-status'); if (!el) return;
+  el.innerHTML = EMAIL_CONFIG.enabled && EMAIL_CONFIG.publicKey !== 'VOTRE_PUBLIC_KEY'
+    ? '<span style="color:var(--green)">✅ EmailJS activé</span>'
+    : '<span style="color:var(--yellow)">⚠ EmailJS non configuré — emails désactivés</span>';
+}
+</script>
+</body>
+</html>

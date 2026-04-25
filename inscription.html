@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>CS Headshot Squad · Inscription</title>
+<meta name="description" content="Inscris ta squad au tournoi CS Headshot · Free Fire">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script src="shared.js"></script>
+</head>
+<body>
+
+<button id="mute-btn" onclick="toggleMuteBtn()" title="Musique" style="position:fixed;bottom:68px;right:20px;width:42px;height:42px;border-radius:50%;background:var(--bg3);border:1px solid var(--border2);font-size:18px;cursor:pointer;z-index:9997;display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow);transition:.2s">🔊</button>
+<button id="darkmode-btn" onclick="setDarkMode(!getDarkMode())" title="Thème">☀️</button>
+
+<div class="wrap">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-tag" id="hero-tag">TOURNOI OFFICIEL · FREE FIRE</div>
+    <div class="hero-title" id="h-title">CS <span>HEADSHOT</span></div>
+    <div class="hero-sub" id="h-sub">SQUAD · FREE FIRE</div>
+    <div class="cd-row">
+      <div class="cd-box"><div class="cd-num" id="cd-d">00</div><div class="cd-lbl">Jours</div></div>
+      <div class="cd-sep">:</div>
+      <div class="cd-box"><div class="cd-num" id="cd-h">00</div><div class="cd-lbl">Heures</div></div>
+      <div class="cd-sep">:</div>
+      <div class="cd-box"><div class="cd-num" id="cd-m">00</div><div class="cd-lbl">Min</div></div>
+      <div class="cd-sep">:</div>
+      <div class="cd-box"><div class="cd-num" id="cd-s">00</div><div class="cd-lbl">Sec</div></div>
+    </div>
+    <div class="stats-bar">
+      <div class="stat-item"><div class="stat-value" id="stat-kills">—</div><div class="stat-label">MAX KILLS</div></div>
+      <div class="stat-item"><div class="stat-value" id="stat-squads">—</div><div class="stat-label">SQUADS</div></div>
+      <div class="stat-item"><div class="stat-value" id="stat-hs">—</div><div class="stat-label">HEADSHOT</div></div>
+      <div class="stat-item"><div class="stat-value" id="stat-rounds">—</div><div class="stat-label">ROUNDS</div></div>
+    </div>
+  </div>
+
+  <!-- NAV -->
+  <nav class="nav">
+    <a href="index.html" class="nav-link"><span class="ico">🏠</span><span class="nav-text"> ACCUEIL</span></a>
+    <a href="inscription.html" class="nav-link active"><span class="ico">📝</span><span class="nav-text"> INSCRIPTION</span></a>
+    <a href="joueurs.html" class="nav-link"><span class="ico">👥</span><span class="nav-text"> JOUEURS</span></a>
+    <a href="matchs.html" class="nav-link"><span class="ico">🏆</span><span class="nav-text"> MATCHS</span></a>
+    <a href="espace-joueur.html" class="nav-link"><span class="ico">🎮</span><span class="nav-text"> MON ESPACE</span></a>
+    <a href="admin.html" class="nav-link"><span class="ico">⚙️</span><span class="nav-text"> ADMIN</span><span class="lock">🔒</span></a>
+  </nav>
+
+  <!-- ROOM ID BANNER (visible 5 min avant match) -->
+  <div id="room-banner" style="display:none;padding:14px 20px 0">
+    <div class="room-banner">
+      <div>
+        <div style="font-family:'Orbitron',sans-serif;font-size:9px;color:var(--green);letter-spacing:2px;margin-bottom:4px">🔑 ID DE LA ROOM</div>
+        <div class="room-id-val" id="room-id-val">—</div>
+      </div>
+      <button class="room-copy-btn" onclick="copyRoomId()">📋 COPIER</button>
+    </div>
+  </div>
+
+  <!-- PANEL TYPE PAYANT -->
+  <div id="paid-banner" style="display:none;padding:14px 20px 0">
+    <div class="info-box" style="background:rgba(239,159,39,0.07);border-color:rgba(239,159,39,0.2);color:var(--yellow)">
+      <div class="title">💰 TOURNOI PAYANT — INSCRIPTION EN 2 ÉTAPES</div>
+      1. Soumets ta candidature (formulaire ci-dessous)<br>
+      2. Après validation par l'admin, procède au paiement des frais pour confirmer
+    </div>
+  </div>
+
+  <!-- PANEL INSCRIPTION -->
+  <div class="panel">
+    <p style="text-align:center;font-size:11px;color:var(--text3);font-family:'Orbitron',sans-serif;letter-spacing:1px;margin-bottom:18px" id="sub-label">Inscription · Rejoins le tournoi</p>
+
+    <label class="fl">Pseudo Free Fire *</label>
+    <input class="fi" id="f-ps" placeholder="GΛΞINS_404" maxlength="32">
+
+    <label class="fl">ID Free Fire *</label>
+    <input class="fi" id="f-ffid" placeholder="123456789" maxlength="20"
+      style="font-family:'Orbitron',sans-serif;letter-spacing:2px">
+    <div style="font-size:10px;color:var(--text3);margin-top:-10px;margin-bottom:12px;padding-left:2px">
+      ⓘ L'ID Free Fire est requis pour l'envoi des récompenses
+    </div>
+
+    <label class="fl">Nom de la Squad *</label>
+    <input class="fi" id="f-sq" placeholder="Headshot Squad" maxlength="32">
+
+    <div class="frow">
+      <div>
+        <label class="fl">Contact WhatsApp *</label>
+        <input class="fi" id="f-ct" placeholder="+229 XX XX XX XX" maxlength="20">
+      </div>
+      <div>
+        <label class="fl">Email *</label>
+        <input class="fi" id="f-em" type="email" placeholder="email@example.com">
+      </div>
+    </div>
+
+    <div class="sec-title" style="margin-top:4px">MEMBRES DE LA SQUAD (optionnel)</div>
+    <div style="font-size:10px;color:var(--text3);margin-bottom:10px;font-family:'Orbitron',sans-serif;letter-spacing:1px">TU PEUX AUSSI AJOUTER LES ID FREE FIRE DE TES MEMBRES</div>
+
+    <div class="frow">
+      <input class="fi" id="m1" placeholder="Membre 2" maxlength="32">
+      <input class="fi" id="m1id" placeholder="ID Free Fire membre 2" maxlength="20" style="font-family:'Orbitron',sans-serif;font-size:12px">
+    </div>
+    <div class="frow">
+      <input class="fi" id="m2" placeholder="Membre 3" maxlength="32">
+      <input class="fi" id="m2id" placeholder="ID Free Fire membre 3" maxlength="20" style="font-family:'Orbitron',sans-serif;font-size:12px">
+    </div>
+    <div class="frow" style="margin-bottom:6px">
+      <input class="fi" id="m3" placeholder="Membre 4" maxlength="32">
+      <input class="fi" id="m3id" placeholder="ID Free Fire membre 4" maxlength="20" style="font-family:'Orbitron',sans-serif;font-size:12px">
+    </div>
+
+    <button class="btn-primary" id="sub-btn" onclick="soumettre()">SOUMETTRE L'INSCRIPTION</button>
+    <div class="toast" id="toast"></div>
+
+    <div class="export-btns" style="margin-top:20px">
+      <button class="btn-secondary" onclick="exportJSON()">📥 Exporter JSON</button>
+      <button class="btn-secondary" onclick="exportCSV()">📊 Exporter CSV</button>
+    </div>
+  </div>
+
+  <!-- PRIZE (conditionnel selon showPrize) -->
+  <div class="prize-sec" id="prize-section">
+    <div class="prize-title">PRIZE POOL · <span id="pz-total">500 000 FCFA</span></div>
+    <div class="pz-row"><span class="pz-place g">🥇 1ère place</span><span class="pz-amount" id="pz1">300 000 FCFA</span></div>
+    <div class="pz-row"><span class="pz-place s">🥈 2ème place</span><span class="pz-amount" id="pz2">150 000 FCFA</span></div>
+    <div class="pz-row"><span class="pz-place b">🥉 3ème place</span><span class="pz-amount" id="pz3">50 000 FCFA</span></div>
+  </div>
+  <!-- RÉCOMPENSES DIGITALES (conditionnel selon showDigital) -->
+  <div id="digital-rewards-section" style="display:none;padding:16px 20px;background:var(--bg3);border-top:1px solid var(--border)">
+    <div style="font-family:'Orbitron',sans-serif;font-size:9px;letter-spacing:2px;color:var(--blue);margin-bottom:12px">💎 RÉCOMPENSES DIGITALES FREE FIRE</div>
+    <div id="digital-rewards-list"></div>
+  </div>
+
+</div>
+
+<script>
+// Sync Firebase au démarrage
+// Récupérer le tournoi depuis l'URL ou la session (EN PREMIER — tid requis partout)
+const urlParams = new URLSearchParams(window.location.search);
+const tid = urlParams.get('t') || getActiveTournamentId();
+if(tid) setActiveTournamentId(tid);
+
+const _tournament = getTournamentById(tid) || getSettings();
+
+// Init page
+initDarkMode();
+resumeGlobalMusic();
+(function(){ const b=document.getElementById('mute-btn'); if(b) b.textContent=getMuteState()?'🔇':'🔊'; })();
+applyHero(_tournament);
+applyStats(_tournament);
+applyPrize(_tournament);
+applyRewardsDisplay(_tournament);
+initMusicGlobal(_tournament);
+
+// Sync Firebase en arrière-plan (rafraîchit les données sans bloquer l'UI)
+dbSync().then(() => {
+  const fresh = getTournamentById(tid);
+  if (fresh) {
+    applyHero(fresh);
+    applyStats(fresh);
+    applyPrize(fresh);
+    applyRewardsDisplay(fresh);
+  }
+});
+
+// Afficher bannière type payant
+if(_tournament.type === 'paid'){
+  document.getElementById('paid-banner').style.display = 'block';
+}
+
+// Mise à jour label
+document.getElementById('sub-label').textContent =
+  'Inscription · ' + _tournament.name + ' · ' + (_tournament.type === 'paid' ? '💰 Payant' : '🎮 Gratuit');
+
+// Room ID (si applicable)
+function checkRoomId(){
+  if(_tournament.roomId && shouldShowRoomId(_tournament)){
+    document.getElementById('room-banner').style.display = 'block';
+    document.getElementById('room-id-val').textContent = _tournament.roomId;
+  }
+}
+checkRoomId();
+setInterval(checkRoomId, 30000);
+
+function copyRoomId(){
+  navigator.clipboard.writeText(_tournament.roomId || '').then(()=>notify('✓ ID Room copié !','ok'));
+}
+
+// Init EmailJS
+// Init EmailJS au chargement
+if(EMAIL_CONFIG.enabled && EMAIL_CONFIG.publicKey){
+  emailjs.init(EMAIL_CONFIG.publicKey);
+}
+
+// ── FORMULAIRE ────────────────────────────────────────────────────────────────
+function soumettre(){
+  const ps   = document.getElementById('f-ps').value.trim();
+  const ffid = document.getElementById('f-ffid').value.trim();
+  const sq   = document.getElementById('f-sq').value.trim();
+  const ct   = document.getElementById('f-ct').value.trim();
+  const em   = document.getElementById('f-em').value.trim();
+  const m1   = document.getElementById('m1').value.trim();
+  const m2   = document.getElementById('m2').value.trim();
+  const m3   = document.getElementById('m3').value.trim();
+  const m1id = document.getElementById('m1id').value.trim();
+  const m2id = document.getElementById('m2id').value.trim();
+  const m3id = document.getElementById('m3id').value.trim();
+
+  if(!ps || !ffid || !sq || !ct || !em){
+    showToast('Remplis tous les champs obligatoires (*) — dont l\'ID Free Fire','err'); return;
+  }
+  if(!/^\d+$/.test(ffid)){
+    showToast('L\'ID Free Fire doit être un nombre (ex: 123456789)','err'); return;
+  }
+  if(!em.includes('@') || !em.includes('.')){
+    showToast('Adresse email invalide.','err'); return;
+  }
+
+  // Vérifier max squads
+  const data = getData(tid);
+  const totalValid = (data.pending||[]).length + (data.approved||[]).length;
+  if(totalValid >= _tournament.maxTeams){
+    showToast('⚠️ Le tournoi est complet ! Plus de places disponibles.','err'); return;
+  }
+
+  const btn = document.getElementById('sub-btn');
+  btn.disabled = true; btn.textContent = 'ENVOI EN COURS...';
+
+  const ref = genRef();
+  const playerCode = genPlayerCode();
+  const entry = {
+    ps, ffid, sq, ct, em,
+    members: [
+      {name:m1||'—', ffid:m1id||''},
+      {name:m2||'—', ffid:m2id||''},
+      {name:m3||'—', ffid:m3id||''}
+    ],
+    ref, playerCode, date: new Date().toLocaleString('fr-FR'),
+    status: _tournament.type === 'paid' ? 'pending_payment' : 'pending',
+    tournamentId: tid, tournamentName: _tournament.name
+  };
+
+  data.pending.push(entry);
+  saveData(data, tid);
+
+  // Afficher confirmation immédiatement + envoyer email admin en arrière-plan
+  const msg = _tournament.type === 'paid'
+    ? '✅ Candidature soumise !\nRéf : '+ref+'\n\n⏳ En attente de validation admin + paiement des frais.'
+    : '✅ Inscription enregistrée !\nRéférence : '+ref;
+  showToast(msg,'info');
+  notify('✓ Inscription enregistrée','ok');
+  reset(); // ← toujours appelé, quelle que soit la config email
+
+  // Email admin en arrière-plan (non bloquant)
+  if(EMAIL_CONFIG.enabled){
+    const membersStr = [m1,m2,m3].filter(Boolean).join(', ') || 'Aucun';
+    sendEmail('inscription_admin', EMAIL_CONFIG.adminEmail, {
+      to_name:         'Admin',
+      player_name:     ps,
+      ff_id:           ffid,
+      squad_name:      sq,
+      membres:         membersStr,
+      contact:         ct,
+      player_email:    em,
+      ref_code:        ref,
+      date:            entry.date,
+      tournament_name: _tournament.name
+    }).then(ok => {
+      if(ok) notify('✓ Admin notifié par email','ok');
+      else   notify('⚠ Email admin non envoyé — vérifie la config EmailJS','info');
+    });
+  }
+
+  function reset(){
+    btn.disabled = false; btn.textContent = "SOUMETTRE L'INSCRIPTION";
+    ['f-ps','f-ffid','f-sq','f-ct','f-em','m1','m1id','m2','m2id','m3','m3id']
+      .forEach(id=>document.getElementById(id).value='');
+  }
+}
+
+function applyRewardsDisplay(t) {
+  // Afficher/masquer prize pool selon showPrize
+  const prizeEl = document.getElementById('prize-section');
+  if (prizeEl) prizeEl.style.display = (t.showPrize !== false) ? 'block' : 'none';
+
+  // Afficher/masquer récompenses digitales selon showDigital
+  const digitalEl  = document.getElementById('digital-rewards-section');
+  const digitalList = document.getElementById('digital-rewards-list');
+  if (!digitalEl || !digitalList) return;
+
+  if (t.showDigital === false || !(t.rewards||[]).length) {
+    digitalEl.style.display = 'none';
+    return;
+  }
+  digitalEl.style.display = 'block';
+  digitalList.innerHTML = (t.rewards||[]).map(r => {
+    const info = getRewardTypeInfo(r.type);
+    return `<div style="display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:7px;margin-bottom:6px;background:var(--card-bg);border:1px solid var(--border)">
+      <span style="font-size:20px">${info.icon}</span>
+      <div style="flex:1">
+        <div style="font-family:'Orbitron',sans-serif;font-size:10px;color:var(--blue)">${r.rankLabel||'Rang '+(r.rank||'')}</div>
+        <div style="font-size:13px;font-weight:600;margin-top:1px">${info.label}${r.note?' — '+r.note:''}</div>
+      </div>
+      <div style="font-family:'Orbitron',sans-serif;font-size:12px;color:var(--text3)">×${r.qty||1}</div>
+    </div>`;
+  }).join('');
+}
+
+function showToast(msg, type){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'toast '+type;
+  setTimeout(()=>{ t.className='toast'; }, 9000);
+}
+
+function exportJSON(){
+  const data = getData(tid);
+  const blob = new Blob([JSON.stringify({tournament:_tournament,...data,exported:new Date().toISOString()},null,2)],{type:'application/json'});
+  const a = document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download='tournoi-'+tid+'-inscriptions.json'; a.click();
+  notify('✓ JSON exporté','ok');
+}
+function exportCSV(){
+  const data = getData(tid);
+  const all = [...(data.pending||[]),...(data.approved||[]),...(data.rejected||[])];
+  const rows = ['Pseudo,ID FF,Squad,Contact,Email,Membres,Références,Date,Statut'];
+  all.forEach(p=>{
+    const members = (p.members||[]).map(m=>typeof m==='object'?m.name:m).join(';');
+    rows.push(`"${p.ps}","${p.ffid||''}","${p.sq}","${p.ct}","${p.em}","${members}","${p.ref}","${p.date}","${p.status}"`);
+  });
+  const blob = new Blob([rows.join('\n')],{type:'text/csv;charset=utf-8;'});
+  const a = document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download='tournoi-'+tid+'-inscriptions.csv'; a.click();
+  notify('✓ CSV exporté','ok');
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>CS Headshot Squad · Espace Joueur</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+/* ── ESPACE JOUEUR STYLES ──────────────────────────────────────── */
+.player-profile{
+  background:var(--bg3);border:1px solid var(--border2);
+  border-radius:12px;padding:20px;margin-bottom:16px;
+  position:relative;overflow:hidden;
+}
+.player-profile::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at 0% 50%,rgba(255,68,0,0.07) 0%,transparent 60%);
+  pointer-events:none;
+}
+.player-avatar{
+  width:52px;height:52px;border-radius:50%;
+  background:rgba(255,68,0,0.12);border:2px solid var(--border2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;flex-shrink:0;
+}
+.player-name{font-family:'Orbitron',sans-serif;font-size:16px;color:var(--red)}
+.player-squad{font-size:12px;color:var(--text3);margin-top:2px}
+.player-code{
+  font-family:'Orbitron',sans-serif;font-size:10px;
+  color:var(--text3);letter-spacing:2px;margin-top:6px;
+  display:flex;align-items:center;gap:6px;
+}
+
+.match-card{
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:10px;padding:14px;margin-bottom:10px;
+  transition:.2s;
+}
+.match-card:hover{border-color:var(--border2)}
+.match-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px}
+.match-round{font-family:'Orbitron',sans-serif;font-size:11px;color:var(--red)}
+.match-date{font-size:11px;color:var(--text3)}
+.match-results{display:grid;gap:6px}
+.match-result-row{
+  display:flex;align-items:center;gap:10px;padding:8px 10px;
+  border-radius:6px;background:var(--card-bg);
+  border:1px solid var(--border);font-size:12px;
+}
+.match-result-row.winner{border-color:rgba(239,159,39,0.3);background:rgba(239,159,39,0.06)}
+.match-result-row.my-squad{border-color:var(--border2);background:rgba(255,68,0,0.06)}
+.match-kills{font-family:'Orbitron',sans-serif;font-size:13px;color:var(--red);min-width:30px;text-align:center}
+.match-squad-name{flex:1;font-weight:600}
+.match-rank{font-family:'Orbitron',sans-serif;font-size:11px;min-width:24px;text-align:center}
+
+.claim-card{
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:10px;padding:14px;margin-bottom:10px;
+}
+.claim-status-pending{color:var(--yellow)}
+.claim-status-accepted{color:var(--green)}
+.claim-status-rejected{color:var(--red-soft)}
+
+/* Formulaire réclamation */
+.claim-form{
+  background:rgba(133,183,235,0.05);border:1px solid var(--blue-border);
+  border-radius:10px;padding:16px;margin-top:14px;
+}
+</style>
+<script src="shared.js"></script>
+</head>
+<body>
+<button id="mute-btn" onclick="toggleMuteBtn()" title="Musique" style="position:fixed;bottom:68px;right:20px;width:42px;height:42px;border-radius:50%;background:var(--bg3);border:1px solid var(--border2);font-size:18px;cursor:pointer;z-index:9997;display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow);transition:.2s">🔊</button>
+<button id="darkmode-btn" onclick="setDarkMode(!getDarkMode())" title="Thème">☀️</button>
+
+<div class="wrap">
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-tag">ESPACE JOUEUR · CS HEADSHOT SQUAD</div>
+    <div class="hero-title" id="h-title">CS <span>HEADSHOT</span></div>
+    <div class="hero-sub" id="h-sub">SQUAD · FREE FIRE</div>
+  </div>
+
+  <!-- NAV -->
+  <nav class="nav">
+    <a href="index.html" class="nav-link"><span class="ico">🏠</span><span class="nav-text"> ACCUEIL</span></a>
+    <a href="inscription.html" class="nav-link"><span class="ico">📝</span><span class="nav-text"> INSCRIPTION</span></a>
+    <a href="joueurs.html" class="nav-link"><span class="ico">👥</span><span class="nav-text"> JOUEURS</span></a>
+    <a href="espace-joueur.html" class="nav-link active"><span class="ico">🎮</span><span class="nav-text"> MON ESPACE</span></a>
+    <a href="admin.html" class="nav-link"><span class="ico">⚙️</span><span class="nav-text"> ADMIN</span><span class="lock">🔒</span></a>
+  </nav>
+
+  <!-- LOGIN VIEW -->
+  <div id="login-view" class="panel">
+    <div style="max-width:400px;margin:0 auto">
+      <div style="text-align:center;margin-bottom:24px">
+        <div style="font-size:40px;margin-bottom:10px">🎮</div>
+        <div style="font-family:'Orbitron',sans-serif;font-size:12px;color:var(--text3);letter-spacing:2px">CONNEXION ESPACE JOUEUR</div>
+        <div style="font-size:12px;color:var(--text3);margin-top:6px">Entre ton code joueur ou ta référence d'inscription</div>
+      </div>
+
+      <div style="margin-bottom:14px">
+        <label class="fl">Sélectionner le tournoi</label>
+        <select class="fi" id="login-tournament">
+          <option value="">— Choisir un tournoi —</option>
+        </select>
+      </div>
+
+      <label class="fl">Code joueur ou référence</label>
+      <input class="fi" id="login-code" placeholder="Ton code (reçu par email)" 
+        maxlength="20" style="letter-spacing:3px;text-transform:uppercase;font-family:'Orbitron',sans-serif"
+        onkeydown="if(event.key==='Enter')loginPlayer()">
+      <div style="font-size:10px;color:var(--text3);margin-top:-10px;margin-bottom:14px;padding-left:2px">
+        ⓘ Ton code joueur t'a été envoyé par email lors de la validation de ton inscription
+      </div>
+
+      <button class="btn-primary" onclick="loginPlayer()">ACCÉDER À MON ESPACE →</button>
+      <div class="toast" id="login-toast"></div>
+
+      <div style="margin-top:18px;text-align:center;font-size:11px;color:var(--text3);line-height:1.8">
+        Pas encore inscrit ? <a href="index.html" style="color:var(--red)">S'inscrire à un tournoi</a><br>
+        L'historique des matchs est aussi accessible à tous sur <a href="matchs.html" style="color:var(--red)">la page Matchs</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- PLAYER DASHBOARD (hidden until login) -->
+  <div id="player-view" style="display:none" class="panel">
+
+    <!-- Profil joueur -->
+    <div class="player-profile">
+      <div style="display:flex;align-items:center;gap:14px;position:relative;z-index:1">
+        <div class="player-avatar">🎯</div>
+        <div>
+          <div class="player-name" id="p-name">—</div>
+          <div class="player-squad" id="p-squad">—</div>
+          <div class="player-code" style="font-size:9px;color:var(--text3)">
+            🔒 Code confidentiel — reçu par email
+          </div>
+        </div>
+        <div style="margin-left:auto;text-align:right;position:relative;z-index:1">
+          <span class="badge" id="p-status-badge">—</span>
+          <div style="font-size:10px;color:var(--text3);margin-top:6px;font-family:'Orbitron',sans-serif" id="p-tournament-name">—</div>
+        </div>
+      </div>
+
+      <!-- Stats joueur -->
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px;position:relative;z-index:1">
+        <div class="stat-item"><div class="stat-value" id="p-total-kills">—</div><div class="stat-label">KILLS TOTAUX</div></div>
+        <div class="stat-item"><div class="stat-value" id="p-matches-played">—</div><div class="stat-label">MATCHS</div></div>
+        <div class="stat-item"><div class="stat-value" id="p-best-rank">—</div><div class="stat-label">MEILLEUR RANG</div></div>
+      </div>
+    </div>
+
+    <!-- Room ID si applicable -->
+    <div id="room-banner-player" style="display:none;margin-bottom:14px">
+      <div class="room-banner">
+        <div>
+          <div style="font-family:'Orbitron',sans-serif;font-size:9px;color:var(--green);letter-spacing:2px;margin-bottom:4px">🔑 ID DE LA ROOM DU PROCHAIN MATCH</div>
+          <div class="room-id-val" id="room-id-player">—</div>
+        </div>
+        <button class="room-copy-btn" onclick="copyRoomId()">📋 COPIER</button>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div style="display:flex;gap:6px;margin-bottom:16px;overflow-x:auto;padding-bottom:2px">
+      <button class="ts-tab active" onclick="showTab('matchs',this)">📊 MES MATCHS</button>
+      <button class="ts-tab" onclick="showTab('squad',this)">👥 MA SQUAD</button>
+      <button class="ts-tab" onclick="showTab('rewards',this)">💎 RÉCOMPENSES</button>
+      <button class="ts-tab" onclick="showTab('claims',this)">⚖️ RÉCLAMATIONS</button>
+    </div>
+
+    <!-- Tab : Mes matchs -->
+    <div id="tab-matchs">
+      <div class="sec-title">HISTORIQUE DE MES MATCHS</div>
+      <div id="my-matches-list">
+        <div class="empty">AUCUN MATCH ENREGISTRÉ</div>
+      </div>
+    </div>
+
+    <!-- Tab : Ma squad -->
+    <div id="tab-squad" style="display:none">
+      <div class="sec-title">MEMBRES DE MA SQUAD</div>
+      <div id="squad-members-list"></div>
+
+      <div class="sec-title" style="margin-top:20px">INFORMATIONS D'INSCRIPTION</div>
+      <div id="registration-info"></div>
+    </div>
+
+    <!-- Tab : Récompenses -->
+    <div id="tab-rewards" style="display:none">
+      <div class="sec-title">RÉCOMPENSES DU TOURNOI</div>
+      <div class="info-box" style="margin-bottom:12px">
+        <div class="title">💎 TABLEAU DES RÉCOMPENSES</div>
+        Les récompenses seront envoyées sur ton ID Free Fire après confirmation du résultat par l'admin.
+      </div>
+      <div id="rewards-display"></div>
+    </div>
+
+    <!-- Tab : Réclamations -->
+    <div id="tab-claims" style="display:none">
+      <div class="sec-title">MES RÉCLAMATIONS</div>
+      <div id="claims-list">
+        <div class="empty">AUCUNE RÉCLAMATION</div>
+      </div>
+
+      <div class="claim-form">
+        <div style="font-family:'Orbitron',sans-serif;font-size:10px;color:var(--blue);letter-spacing:2px;margin-bottom:12px">⚖️ SOUMETTRE UNE RÉCLAMATION</div>
+        
+        <label class="fl">Match concerné</label>
+        <select class="fi" id="claim-match-select">
+          <option value="">— Choisir un match —</option>
+        </select>
+
+        <label class="fl">Motif de la réclamation</label>
+        <textarea class="fi" id="claim-reason" rows="3" placeholder="Décris précisément le problème (ex: Score incorrect, joueur absent, connexion coupée...)" style="resize:vertical"></textarea>
+
+        <label class="fl">Preuve (capture d'écran) — optionnel</label>
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:14px;flex-wrap:wrap">
+          <label style="flex:1;cursor:pointer">
+            <div class="fi" style="margin-bottom:0;cursor:pointer;color:var(--text3);display:flex;align-items:center;gap:8px">
+              <span>📸</span><span id="claim-file-name">Choisir une image…</span>
+            </div>
+            <input type="file" id="claim-proof-input" accept="image/*" style="display:none" onchange="handleClaimProof(this)">
+          </label>
+        </div>
+
+        <button class="btn-blue" style="width:100%" onclick="submitClaim()">ENVOYER LA RÉCLAMATION</button>
+        <div class="toast" id="claim-toast"></div>
+      </div>
+    </div>
+
+    <div style="margin-top:20px;text-align:center">
+      <button class="btn-secondary" onclick="logout()">← DÉCONNEXION</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// Sync Firebase au démarrage (données fraîches depuis le cloud)
+migrateIfNeeded();
+dbSync().then(() => {
+  migrateIfNeeded(); // re-migrer après sync Firebase
+  if(typeof renderTournaments === 'function') renderTournaments();
+  if(typeof render === 'function') render();
+});
+initDarkMode();
+resumeGlobalMusic();
+(function(){ const b=document.getElementById('mute-btn'); if(b) b.textContent=getMuteState()?'🔇':'🔊'; })();
+
+let _session = null; // { entry, tournament }
+let _claimProofBase64 = null;
+let _activeTab = 'matchs';
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+function buildLoginTournamentSelect(){
+  const sel=document.getElementById('login-tournament');
+  const list=getTournaments();
+  sel.innerHTML='<option value="">— Choisir un tournoi —</option>'+
+    list.map(t=>`<option value="${t.id}">${t.name} · ${getStatusLabel(getTournamentStatus(t)).label}</option>`).join('');
+  // Pré-sélectionner tournoi actif
+  const active=getActiveTournamentId();
+  if(active) sel.value=active;
+}
+
+buildLoginTournamentSelect();
+applyHero(getTournamentById(getActiveTournamentId()));
+
+// ── LOGIN ─────────────────────────────────────────────────────────────────────
+function loginPlayer(){
+  const tid=document.getElementById('login-tournament').value;
+  const code=document.getElementById('login-code').value.trim().toUpperCase();
+
+  if(!tid){showLoginToast('Sélectionne un tournoi','err');return;}
+  if(!code){showLoginToast('Entre ton code joueur','err');return;}
+
+  const entry=getEntryByCode(tid, code);
+  if(!entry){showLoginToast('Code introuvable. Vérifie le tournoi sélectionné et ton code.','err');return;}
+  // Vérifier si le code a été invalidé après distribution des récompenses
+  if(entry.codeInvalidated){
+    showLoginToast("⚠️ Ce code n'est plus valide. Les récompenses ont été distribuées et les accès clôturés pour ce tournoi.",'err');
+    return;
+  }
+
+  const tournament=getTournamentById(tid);
+  _session={entry, tournament, tid};
+  setActiveTournamentId(tid);
+
+  // Sauvegarder session
+  sessionStorage.setItem('hsq-player-session', JSON.stringify({playerCode:entry.playerCode, tid}));
+
+  showPlayerDashboard();
+}
+
+function showLoginToast(msg,type){
+  const t=document.getElementById('login-toast');
+  t.textContent=msg; t.className='toast '+type;
+  setTimeout(()=>{t.className='toast';},5000);
+}
+
+// ── DASHBOARD ─────────────────────────────────────────────────────────────────
+function showPlayerDashboard(){
+  if(!_session) return;
+  const {entry, tournament} = _session;
+
+  document.getElementById('login-view').style.display='none';
+  document.getElementById('player-view').style.display='block';
+
+  applyHero(tournament);
+
+  // Profil
+  document.getElementById('p-name').textContent=entry.ps;
+  document.getElementById('p-squad').textContent=entry.sq+(entry.ffid?' · ID: '+entry.ffid:'');
+  // Code joueur masqué — uniquement dans la fiche email envoyée à l'inscription
+  document.getElementById('p-tournament-name').textContent=tournament.name;
+
+  // Badge statut
+  const sb=document.getElementById('p-status-badge');
+  if(entry.status==='approved'){ sb.textContent='✓ VALIDÉ'; sb.className='badge badge-ok'; }
+  else if(entry.status==='rejected'){ sb.textContent='✗ REFUSÉ'; sb.className='badge badge-rejected'; }
+  else{ sb.textContent='⏳ EN ATTENTE'; sb.className='badge badge-pending'; }
+
+  // Room ID
+  if(tournament.roomId&&shouldShowRoomId(tournament)){
+    document.getElementById('room-banner-player').style.display='block';
+    document.getElementById('room-id-player').textContent=tournament.roomId;
+  }
+
+  // Calculer stats depuis les matchs
+  computePlayerStats();
+
+  // Charger tous les tabs
+  renderMyMatches();
+  renderSquad();
+  renderRewards();
+  renderClaims();
+  populateClaimMatchSelect();
+
+  initMusicGlobal(tournament);
+}
+
+function computePlayerStats(){
+  const {entry, tid}=_session;
+  const matches=getMatches(tid);
+  let totalKills=0, played=0, bestRank=99;
+
+  matches.forEach(m=>{
+    const myResult=m.results&&m.results.find(r=>r.squad===entry.sq);
+    if(myResult){
+      played++;
+      totalKills+=(parseInt(myResult.kills)||0);
+      if(myResult.rank&&myResult.rank<bestRank) bestRank=myResult.rank;
+    }
+  });
+
+  document.getElementById('p-total-kills').textContent=totalKills||'—';
+  document.getElementById('p-matches-played').textContent=played||'0';
+  document.getElementById('p-best-rank').textContent=bestRank<99?'#'+bestRank:'—';
+}
+
+// ── MATCHS ─────────────────────────────────────────────────────────────────────
+function renderMyMatches(){
+  const {entry, tid}=_session;
+  const matches=getMatches(tid);
+  const el=document.getElementById('my-matches-list');
+
+  if(!matches.length){el.innerHTML='<div class="empty">AUCUN MATCH ENREGISTRÉ<br><span style="font-size:9px">Les matchs seront ajoutés par l\'admin</span></div>';return;}
+
+  el.innerHTML=matches.map(m=>{
+    const myResult=m.results&&m.results.find(r=>r.squad===entry.sq);
+    const results=[...(m.results||[])].sort((a,b)=>(a.rank||99)-(b.rank||99));
+
+    return `
+    <div class="match-card">
+      <div class="match-header">
+        <div>
+          <div class="match-round">${m.round||'Match'}</div>
+          <div class="match-date">${m.date||'—'}</div>
+        </div>
+        ${myResult?`<span class="badge ${myResult.isWinner?'badge-ok':'badge-pending'}">${myResult.isWinner?'🏆 VAINQUEUR':'Rang #'+(myResult.rank||'?')}</span>`:'<span class="badge badge-ended">NON PARTICIPÉ</span>'}
+      </div>
+      <div class="match-results">
+        ${results.map(r=>{
+          const isMe=r.squad===entry.sq;
+          return `<div class="match-result-row${r.isWinner?' winner':''}${isMe?' my-squad':''}">
+            <div class="match-rank">${r.rank?'#'+r.rank:'—'}</div>
+            <div class="match-squad-name">${r.squad}${isMe?' <span style="color:var(--red);font-size:10px">(toi)</span>':''}</div>
+            <div style="display:flex;align-items:center;gap:4px">
+              <div class="match-kills">${r.kills||0}</div>
+              <div style="font-size:9px;color:var(--text3)">KILLS</div>
+            </div>
+            ${r.isWinner?'<span style="font-size:16px">🏆</span>':''}
+          </div>`;
+        }).join('')}
+      </div>
+      ${m.notes?`<div style="margin-top:8px;font-size:11px;color:var(--text3);font-style:italic;padding-top:8px;border-top:1px solid var(--border)">${m.notes}</div>`:''}
+
+      <!-- Bouton réclamation -->
+      <div style="margin-top:10px">
+        <button class="btn-blue" onclick="openClaimForMatch('${m.id}')" style="font-size:9px;padding:7px 12px">
+          ⚖️ RÉCLAMATION SUR CE MATCH
+        </button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── SQUAD ─────────────────────────────────────────────────────────────────────
+function renderSquad(){
+  const {entry}=_session;
+  const members=entry.members||[];
+
+  const membersEl=document.getElementById('squad-members-list');
+  const membersList=[{name:entry.ps, ffid:entry.ffid, isLeader:true}, ...members.map(m=>typeof m==='object'?m:{name:m,ffid:''}).filter(m=>m.name&&m.name!=='—')];
+
+  membersEl.innerHTML=membersList.map((m,i)=>`
+  <div class="pr">
+    <div class="pnum">${i===0?'👑':(i+1)}</div>
+    <div style="flex:1">
+      <div class="pname" style="font-size:13px">${m.name}</div>
+      ${m.ffid?`<div class="psub">ID Free Fire: ${m.ffid}</div>`:''}
+    </div>
+    ${m.isLeader?'<span class="badge badge-ok" style="font-size:8px">CAPITAINE</span>':''}
+  </div>`).join('');
+
+  // Infos d'inscription
+  const regEl=document.getElementById('registration-info');
+  const t=_session.tournament;
+  regEl.innerHTML=`
+  <div class="adm-card">
+    <div class="adm-info" style="grid-template-columns:1fr 1fr">
+      <div>Référence <span>${entry.ref}</span></div>
+      <div>Code joueur <span style="color:var(--text3)">🔒 Confidentiel (reçu par email)</span></div>
+      <div>Contact <span>${entry.ct}</span></div>
+      <div>Email <span>${entry.em}</span></div>
+      <div>Date d'inscription <span style="font-family:'Rajdhani',sans-serif">${entry.date}</span></div>
+      <div>Statut paiement <span>${entry.status==='approved'?'✅ Validé':entry.status==='pending_payment'?'⏳ En attente de paiement':'—'}</span></div>
+    </div>
+    ${t.type==='paid'&&t.paymentInfo&&entry.status!=='approved'?`
+    <div class="info-box" style="margin-top:12px;background:rgba(239,159,39,0.07);border-color:rgba(239,159,39,0.2);color:var(--yellow)">
+      <div class="title">💰 INFORMATIONS DE PAIEMENT</div>
+      <pre style="font-family:'Rajdhani',sans-serif;font-size:13px;white-space:pre-wrap">${t.paymentInfo}</pre>
+    </div>`:''}
+  </div>`;
+}
+
+// ── RÉCOMPENSES ───────────────────────────────────────────────────────────────
+function renderRewards(){
+  const {entry, tid, tournament:t} = _session;
+  const el = document.getElementById('rewards-display');
+
+  // ── 1. Livraisons personnelles (si existantes) ──────────────────────────────
+  const deliveries = (t.rewardDeliveries || []).filter(d => d.playerCode === entry.playerCode);
+
+  if (deliveries.length) {
+    const statusInfo = {
+      pending:   { icon:'⏳', label:'En cours de traitement', color:'var(--yellow)',  bg:'rgba(239,159,39,0.06)',  border:'rgba(239,159,39,0.2)' },
+      sent:      { icon:'📤', label:'Envoyée — confirme la réception', color:'var(--blue)',   bg:'rgba(133,183,235,0.07)', border:'var(--blue-border)' },
+      confirmed: { icon:'✅', label:'Reçue et confirmée',     color:'var(--green)',   bg:'rgba(93,202,165,0.07)',  border:'rgba(93,202,165,0.25)' }
+    };
+
+    el.innerHTML = `
+    <div style="font-family:'Orbitron',sans-serif;font-size:9px;letter-spacing:2px;color:var(--green);margin-bottom:10px">
+      🏆 TES RÉCOMPENSES GAGNÉES
+    </div>` +
+    deliveries.sort((a,b) => a.rank - b.rank).map(d => {
+      const si  = statusInfo[d.status] || statusInfo.pending;
+      const medal = ['🥇','🥈','🥉'][d.rank - 1] || `#${d.rank}`;
+      const canConfirm = d.status === 'sent';
+
+      return `
+      <div style="background:${si.bg};border:1px solid ${si.border};border-radius:10px;padding:16px;margin-bottom:10px">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px">
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="font-size:26px">${medal}</span>
+            <div>
+              <div style="font-family:'Orbitron',sans-serif;font-size:11px;color:var(--text)">${d.rankLabel}</div>
+              <div style="font-size:12px;color:var(--text3);margin-top:2px">${d.typeIcon} ${d.typeLabel} × ${d.qty}</div>
+            </div>
+          </div>
+          <span style="font-family:'Orbitron',sans-serif;font-size:9px;letter-spacing:1px;color:${si.color}">${si.icon} ${si.label}</span>
+        </div>
+
+        ${d.status === 'sent' ? `
+        <div style="background:rgba(133,183,235,0.06);border:1px solid var(--blue-border);border-radius:7px;padding:10px;margin-bottom:10px;font-size:11px;color:var(--blue)">
+          📤 L'admin a envoyé ta récompense sur ton ID Free Fire (<strong>${entry.ffid || '—'}</strong>).<br>
+          Vérifie ton compte Free Fire puis confirme la réception.
+        </div>` : ''}
+
+        ${d.status === 'confirmed' ? `
+        <div style="font-size:11px;color:var(--green);opacity:.8">
+          ✓ Confirmé le ${d.confirmedAt || '—'}
+        </div>` : ''}
+
+        ${d.devNote ? `<div style="font-size:10px;color:var(--text3);font-style:italic;margin-top:4px">${d.devNote}</div>` : ''}
+
+        ${canConfirm ? `
+        <button onclick="confirmRewardReceived('${d.id}')"
+          style="width:100%;margin-top:8px;background:rgba(93,202,165,0.12);border:1px solid rgba(93,202,165,0.3);
+          color:var(--green);font-family:'Orbitron',sans-serif;font-size:10px;letter-spacing:1px;
+          padding:11px;border-radius:6px;cursor:pointer;transition:.2s"
+          onmouseover="this.style.background='rgba(93,202,165,0.22)'"
+          onmouseout="this.style.background='rgba(93,202,165,0.12)'">
+          ✅ JE CONFIRME AVOIR REÇU MA RÉCOMPENSE
+        </button>` : ''}
+      </div>`;
+    }).join('');
+
+    // ── Ajouter le tableau général en dessous ─────────────────────────────────
+    const rewards = t.rewards || [];
+    if (rewards.length) {
+      el.innerHTML += `
+      <div style="font-family:'Orbitron',sans-serif;font-size:9px;letter-spacing:2px;color:var(--text3);margin:16px 0 10px">
+        TABLEAU COMPLET DES RÉCOMPENSES
+      </div>` +
+      rewards.map((r, i) => {
+        const info = getRewardTypeInfo(r.type);
+        const isMe = deliveries.some(d => d.rank === (r.rank || i+1));
+        return `
+        <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:7px;margin-bottom:6px;
+          background:${isMe ? 'rgba(255,68,0,0.07)' : 'var(--card-bg)'};
+          border:1px solid ${isMe ? 'var(--border2)' : 'var(--border)'}">
+          <span style="font-size:18px">${['🥇','🥈','🥉'][i] || '#'+(i+1)}</span>
+          <div style="flex:1">
+            <div style="font-size:12px;font-weight:600;color:${isMe ? 'var(--red)' : 'var(--text2)'}">${r.rankLabel || 'Place #'+(i+1)}</div>
+            <div style="font-size:11px;color:var(--text3)">${info.icon} ${info.label} × ${r.qty || 1}</div>
+          </div>
+          ${isMe ? '<span style="font-size:9px;font-family:\'Orbitron\',sans-serif;color:var(--red)">← TOI</span>' : ''}
+        </div>`;
+      }).join('');
+    }
+    return;
+  }
+
+  // ── 2. Pas encore de livraison → afficher le catalogue uniquement ────────────
+  const rewards = t.rewards || [];
+  if (!rewards.length) {
+    el.innerHTML = '<div class="empty">AUCUNE RÉCOMPENSE CONFIGURÉE</div>';
+    return;
+  }
+
+  el.innerHTML = `
+  <div class="info-box" style="margin-bottom:12px">
+    <div class="title">💎 TABLEAU DES RÉCOMPENSES</div>
+    Les récompenses seront envoyées sur ton ID Free Fire (<strong>${entry.ffid || 'non renseigné'}</strong>) après confirmation du résultat final.
+  </div>` +
+  rewards.map((r, i) => {
+    const info  = getRewardTypeInfo(r.type);
+    const total = (r.qty || 1) * (r.unitPrice || 0);
+    return `
+    <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:8px;margin-bottom:8px;
+      background:var(--bg3);border:1px solid var(--border)">
+      <span style="font-size:24px">${info.icon}</span>
+      <div style="flex:1">
+        <div style="font-family:'Orbitron',sans-serif;font-size:11px;color:var(--red)">${r.rankLabel || 'Rang '+(i+1)}</div>
+        <div style="font-size:13px;font-weight:600;margin-top:2px">${info.label}${r.note ? ' — '+r.note : ''}</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px">Quantité : ${r.qty || 1}x${r.unitPrice ? ` · ${r.unitPrice} FCFA/unité` : ''}</div>
+      </div>
+      ${total > 0 ? `<div style="font-family:'Orbitron',sans-serif;font-size:13px;color:var(--yellow)">${total.toLocaleString()} FCFA</div>` : ''}
+    </div>`;
+  }).join('');
+
+  const totalCalc = rewards.reduce((sum, r) => sum + ((r.qty || 1) * (r.unitPrice || 0)), 0);
+  if (totalCalc > 0) {
+    el.innerHTML += `<div style="text-align:right;font-family:'Orbitron',sans-serif;font-size:11px;color:var(--yellow);margin-top:6px">TOTAL : ${totalCalc.toLocaleString()} FCFA</div>`;
+  }
+}
+
+// ── CONFIRMATION RÉCEPTION RÉCOMPENSE ─────────────────────────────────────────
+function confirmRewardReceived(deliveryId) {
+  if (!confirm('Confirmes-tu avoir bien reçu ta récompense sur Free Fire ?')) return;
+
+  const t  = getTournamentById(_session.tid);
+  if (!t || !t.rewardDeliveries) return;
+  const d  = t.rewardDeliveries.find(x => x.id === deliveryId);
+  if (!d || d.status !== 'sent') return;
+
+  d.status      = 'confirmed';
+  d.confirmedAt = new Date().toLocaleString('fr-FR');
+  saveTournament(t);
+
+  // Recharger la session avec les données fraîches
+  _session.tournament = getTournamentById(_session.tid);
+
+  renderRewards();
+  notify('✅ Réception confirmée ! Merci et BOOYAH ! 🏆', 'ok');
+}
+
+// ── RÉCLAMATIONS ─────────────────────────────────────────────────────────────
+function renderClaims(){
+  const {entry, tid}=_session;
+  const claims=getClaims(tid).filter(c=>c.playerCode===entry.playerCode);
+  const el=document.getElementById('claims-list');
+
+  if(!claims.length){el.innerHTML='<div class="empty">AUCUNE RÉCLAMATION</div>';return;}
+
+  el.innerHTML=claims.map(c=>`
+  <div class="claim-card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:6px">
+      <div style="font-family:'Orbitron',sans-serif;font-size:10px;color:var(--text3)">${c.id}</div>
+      <span class="badge ${c.status==='accepted'?'badge-ok':c.status==='rejected'?'badge-rejected':'badge-pending'}">
+        ${c.status==='accepted'?'✓ ACCEPTÉE':c.status==='rejected'?'✕ REFUSÉE':'⏳ EN ATTENTE'}
+      </span>
+    </div>
+    <div style="font-size:12px;color:var(--text2);margin-bottom:6px">${c.reason}</div>
+    <div style="font-size:10px;color:var(--text3)">Match: ${c.matchId||'—'} · ${c.date||''}</div>
+    ${c.adminReply?`<div style="margin-top:8px;padding:8px;background:var(--bg);border-radius:5px;font-size:12px;color:var(--blue);border:1px solid var(--blue-border)"><strong>Réponse admin :</strong> ${c.adminReply}</div>`:''}
+  </div>`).join('');
+}
+
+function populateClaimMatchSelect(){
+  const {tid}=_session;
+  const matches=getMatches(tid);
+  const sel=document.getElementById('claim-match-select');
+  sel.innerHTML='<option value="">— Choisir un match —</option>'+
+    matches.map(m=>`<option value="${m.id}">${m.round||'Match'} · ${m.date||'—'}</option>`).join('');
+}
+
+function openClaimForMatch(matchId){
+  showTab('claims', document.querySelector('.ts-tab[onclick*="claims"]'));
+  const sel=document.getElementById('claim-match-select');
+  if(sel) sel.value=matchId;
+  document.getElementById('claim-reason').focus();
+}
+
+function handleClaimProof(input){
+  const file=input.files[0]; if(!file) return;
+  document.getElementById('claim-file-name').textContent=file.name;
+  const reader=new FileReader();
+  reader.onload=e=>{_claimProofBase64=e.target.result;};
+  reader.readAsDataURL(file);
+}
+
+function submitClaim(){
+  const {entry, tid}=_session;
+  const matchId=document.getElementById('claim-match-select').value;
+  const reason=document.getElementById('claim-reason').value.trim();
+  if(!reason){showClaimToast('Décris le motif de ta réclamation','err');return;}
+
+  const claim={
+    id:genClaimId(), tournamentId:tid, matchId,
+    playerCode:entry.playerCode, playerName:entry.ps, squad:entry.sq,
+    reason, proof:_claimProofBase64||'',
+    status:'pending', adminReply:'',
+    date:new Date().toLocaleString('fr-FR')
+  };
+  saveClaim(tid, claim);
+  renderClaims();
+  document.getElementById('claim-reason').value='';
+  document.getElementById('claim-match-select').value='';
+  _claimProofBase64=null;
+  document.getElementById('claim-file-name').textContent='Choisir une image…';
+  showClaimToast('✅ Réclamation envoyée ! L\'admin en sera informé.','ok');
+  notify('✓ Réclamation soumise','ok');
+}
+
+function showClaimToast(msg,type){
+  const t=document.getElementById('claim-toast');
+  t.textContent=msg; t.className='toast '+type;
+  setTimeout(()=>{t.className='toast';},6000);
+}
+
+// ── TABS ─────────────────────────────────────────────────────────────────────
+function showTab(name, btn){
+  _activeTab=name;
+  ['matchs','squad','rewards','claims'].forEach(t=>{
+    const el=document.getElementById('tab-'+t);
+    if(el) el.style.display=t===name?'block':'none';
+  });
+  document.querySelectorAll('.ts-tab').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+}
+
+// ── UTILS ─────────────────────────────────────────────────────────────────────
+function copyCode(){
+  if(!_session) return;
+  navigator.clipboard.writeText(_session.entry.playerCode).then(()=>notify('✓ Code copié !','ok'));
+}
+function copyRoomId(){
+  if(!_session||!_session.tournament.roomId) return;
+  navigator.clipboard.writeText(_session.tournament.roomId).then(()=>notify('✓ Room ID copié !','ok'));
+}
+function logout(){
+  _session=null;
+  sessionStorage.removeItem('hsq-player-session');
+  document.getElementById('player-view').style.display='none';
+  document.getElementById('login-view').style.display='block';
+  stopMusicGlobal();
+}
+
+// ── AUTO-LOGIN depuis session ─────────────────────────────────────────────────
+(function(){
+  const saved=sessionStorage.getItem('hsq-player-session');
+  if(!saved) return;
+  try {
+    const {playerCode, tid}=JSON.parse(saved);
+    const entry=getEntryByCode(tid, playerCode);
+    const tournament=getTournamentById(tid);
+    if(entry&&tournament){ _session={entry,tournament,tid}; showPlayerDashboard(); }
+  } catch(e) {}
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1138 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>CS Headshot Squad · Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script src="shared.js"></script>
+</head>
+<body>
+
+<button id="mute-btn" onclick="toggleMuteBtn()" title="Musique" style="position:fixed;bottom:68px;right:20px;width:42px;height:42px;border-radius:50%;background:var(--bg3);border:1px solid var(--border2);font-size:18px;cursor:pointer;z-index:9997;display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow);transition:.2s">🔊</button>
+<button id="darkmode-btn" onclick="setDarkMode(!getDarkMode())" title="Thème">☀️</button>
+
+<!-- LOCK SCREEN -->
+<div class="lock-screen" id="lock-screen">
+  <div class="lock-box">
+    <div class="lock-icon">🔐</div>
+    <div class="lock-title">ACCÈS ADMIN</div>
+    <div class="lock-sub">Panneau organisateur · GΛΞINS_404</div>
+    <input class="fi" type="password" id="lock-pwd"
+      placeholder="Mot de passe" maxlength="32" style="text-align:center;letter-spacing:4px"
+      onkeydown="if(event.key==='Enter') unlock()">
+    <button class="btn-primary" onclick="unlock()">DÉVERROUILLER</button>
+    <div class="lock-err" id="lock-err"></div>
+    <div style="margin-top:14px">
+      <a href="index.html" style="color:var(--text3);font-size:10px;font-family:'Orbitron',sans-serif;letter-spacing:1px;text-decoration:none">← Retour à l'accueil</a>
+    </div>
+  </div>
+</div>
+
+<div class="wrap" id="main-content" style="display:none">
+
+  <!-- HERO compact -->
+  <div class="hero" style="padding:18px 24px 14px">
+    <div class="hero-tag">PANNEAU ADMIN · GΛΞINS_404</div>
+    <div class="hero-title" id="h-title">CS <span>HEADSHOT</span></div>
+    <div class="hero-sub" id="h-sub">SQUAD · FREE FIRE</div>
+  </div>
+
+  <!-- NAV -->
+  <nav class="nav">
+    <a href="index.html" class="nav-link"><span class="ico">🏠</span> ACCUEIL</a>
+    <a href="inscription.html" class="nav-link"><span class="ico">📝</span> INSCRIPTION</a>
+    <a href="joueurs.html" class="nav-link"><span class="ico">👥</span> JOUEURS</a>
+    <a href="admin.html" class="nav-link active"><span class="ico">⚙️</span> ADMIN</a>
+    <a href="params.html" class="nav-link"><span class="ico">🎮</span> PARAMÈTRES <span class="lock">🔒</span></a>
+  </nav>
+
+  <div class="panel">
+
+    <!-- Banner + sélecteur de tournoi -->
+    <div class="adm-banner">
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <span>TOURNOI ACTIF :</span>
+        <select class="fi" id="t-selector"
+          style="width:auto;margin:0;padding:5px 10px;font-size:11px;font-family:'Orbitron',sans-serif;color:var(--red)"
+          onchange="switchTournament(this.value)">
+        </select>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <span style="font-size:10px">EN ATTENTE : <strong id="pending-count">0</strong></span>
+        <button class="btn-secondary" onclick="verrouiller()">VERROUILLER</button>
+      </div>
+    </div>
+
+    <!-- Room ID Section -->
+    <div class="sec-title">ROOM ID DU PROCHAIN MATCH</div>
+    <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+      <input class="fi" id="room-id-input" placeholder="Ex: 12345 · Mot de passe: abc" style="flex:1;margin-bottom:0">
+      <input class="fi" id="next-match-input" type="datetime-local" style="flex:1;margin-bottom:0" title="Date/heure du prochain match">
+      <button class="btn-ok" onclick="saveRoomId()" style="min-width:100px">💾 SAUVER</button>
+    </div>
+    <div id="room-status" style="font-size:10px;color:var(--text3);font-family:'Orbitron',sans-serif;letter-spacing:1px;margin-bottom:8px"></div>
+
+    <!-- Inscriptions en attente -->
+    <div class="sec-title">DEMANDES EN ATTENTE</div>
+    <div id="pending-list"><div class="empty" style="padding:14px;font-size:9px">VIDE</div></div>
+
+    <div class="sec-title">INSCRIPTIONS VALIDÉES</div>
+    <div id="approved-list"><div class="empty" style="padding:14px;font-size:9px">VIDE</div></div>
+
+    <div class="sec-title">INSCRIPTIONS REFUSÉES</div>
+    <div id="rejected-list"><div class="empty" style="padding:14px;font-size:9px">VIDE</div></div>
+
+    <!-- RÉCLAMATIONS -->
+    <div class="sec-title" style="margin-top:24px">RÉCLAMATIONS EN ATTENTE <span id="claims-count" style="color:var(--red);margin-left:6px;font-size:11px"></span></div>
+    <div id="claims-admin-list"><div class="empty" style="padding:10px;font-size:9px">AUCUNE RÉCLAMATION</div></div>
+
+    <!-- ══ ANNONCES & SONDAGES ══════════════════════════════════════ -->
+    <div class="sec-title" style="margin-top:24px">📢 ANNONCES & SONDAGES <span style="font-size:9px;color:var(--text3)">(visibles sur la page d'accueil)</span></div>
+
+    <!-- Formulaire création -->
+    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:12px">
+      <div style="font-family:'Orbitron',sans-serif;font-size:9px;letter-spacing:1px;color:var(--text3);margin-bottom:12px">CRÉER UNE ANNONCE / SONDAGE</div>
+
+      <div class="param-grid" style="margin-bottom:10px">
+        <div>
+          <label class="fl">Type</label>
+          <select class="fi" id="ann-type" style="margin-bottom:0" onchange="togglePollOptions(this.value)">
+            <option value="info">ℹ️ Information</option>
+            <option value="warning">⚠️ Avertissement</option>
+            <option value="poll">📊 Sondage</option>
+          </select>
+        </div>
+        <div>
+          <label class="fl">Titre *</label>
+          <input class="fi" id="ann-title" placeholder="Ex: Rappel · Match demain 20h" style="margin-bottom:0">
+        </div>
+      </div>
+
+      <label class="fl">Message</label>
+      <textarea class="fi" id="ann-body" rows="2" placeholder="Contenu de l'annonce…" style="resize:vertical;margin-bottom:10px"></textarea>
+
+      <div id="poll-options-wrap" style="display:none">
+        <label class="fl">Options du sondage (une par ligne)</label>
+        <textarea class="fi" id="ann-options" rows="3" placeholder="Option A
+Option B
+Option C" style="resize:vertical;margin-bottom:10px"></textarea>
+      </div>
+
+      <button class="btn-ok" style="width:100%" onclick="createAnnouncement()">➕ PUBLIER L'ANNONCE</button>
+    </div>
+
+    <!-- Liste des annonces existantes -->
+    <div id="announcements-admin-list"><div class="empty" style="font-size:9px;padding:10px">AUCUNE ANNONCE</div></div>
+
+    <!-- SECTION DÉVELOPPEUR (protégée par code dev) -->
+    <div class="dev-section" id="dev-section" style="display:none">
+      <div class="sec-title" style="color:var(--blue);border-bottom-color:var(--blue-border)">
+        🛠 FONCTIONS DÉVELOPPEUR <span class="dev-badge">DEV ONLY</span>
+      </div>
+
+      <div class="sec-title" style="color:var(--blue);border-bottom-color:var(--blue-border);font-size:8px">CRÉER UN NOUVEAU TOURNOI</div>
+      <div class="create-t-form">
+        <div class="param-grid">
+          <div><label class="fl">Nom du tournoi</label><input class="fi" id="new-name" placeholder="CS HEADSHOT" style="margin-bottom:0"></div>
+          <div><label class="fl">Sous-titre</label><input class="fi" id="new-sub" placeholder="SQUAD · FREE FIRE" style="margin-bottom:0"></div>
+          <div><label class="fl">Date</label><input class="fi" id="new-date" type="datetime-local" style="margin-bottom:0"></div>
+          <div><label class="fl">Lieu</label><input class="fi" id="new-lieu" placeholder="En ligne · Bénin" style="margin-bottom:0"></div>
+          <div><label class="fl">Format</label><input class="fi" id="new-format" placeholder="4 vs 4 · Headshot only" style="margin-bottom:0"></div>
+          <div><label class="fl">Max équipes</label><input class="fi" id="new-max" type="number" placeholder="16" style="margin-bottom:0"></div>
+          <div><label class="fl">Prize Pool Total</label><input class="fi" id="new-pt" placeholder="500 000 FCFA" style="margin-bottom:0"></div>
+          <div>
+            <label class="fl">Type</label>
+            <select class="fi" id="new-type" style="margin-bottom:0">
+              <option value="free">🎮 Gratuit</option>
+              <option value="paid">💰 Payant</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn-blue" style="width:100%;margin-top:12px" onclick="createTournament()">
+          ➕ CRÉER LE TOURNOI
+        </button>
+      </div>
+
+      <div class="sec-title" style="color:var(--text3);border-bottom-color:rgba(255,255,255,0.06);font-size:8px">TOUS LES TOURNOIS</div>
+      <div id="all-tournaments-list"></div>
+
+
+      <!-- CHANGEMENT MOT DE PASSE ADMIN -->
+      <div class="sec-title" style="color:var(--blue);border-bottom-color:var(--blue-border);font-size:8px;margin-top:18px">
+        🔐 CHANGER LE MOT DE PASSE ADMIN
+      </div>
+      <div style="background:rgba(255,68,0,0.04);border:1px solid var(--border2);border-radius:8px;padding:14px;margin-bottom:14px">
+        <div class="param-grid">
+          <div>
+            <label class="fl">Nouveau mot de passe admin</label>
+            <input class="fi" id="dev-new-pwd" type="password" placeholder="Nouveau mot de passe (min 6)" maxlength="64" style="margin-bottom:0">
+          </div>
+          <div>
+            <label class="fl">Confirmer</label>
+            <input class="fi" id="dev-new-pwd2" type="password" placeholder="Confirmer" maxlength="64" style="margin-bottom:0">
+          </div>
+        </div>
+        <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn-ok" onclick="changeAdminPassword()" style="flex:1">💾 CHANGER LE MOT DE PASSE</button>
+          <button class="btn-blue" onclick="resetAdminPassword()" style="flex:1">↩ RÉINITIALISER PAR DÉFAUT</button>
+        </div>
+        <div class="toast" id="pwd-change-toast" style="margin-top:10px"></div>
+      </div>
+
+      <!-- CHANGEMENT CODE DÉVELOPPEUR -->
+      <div class="sec-title" style="color:var(--blue);border-bottom-color:var(--blue-border);font-size:8px;margin-top:4px">
+        🛠 CHANGER LE CODE DÉVELOPPEUR
+      </div>
+      <div style="background:rgba(133,183,235,0.05);border:1px solid var(--blue-border);border-radius:8px;padding:14px;margin-bottom:14px">
+        <div class="param-grid">
+          <div>
+            <label class="fl">Nouveau code développeur</label>
+            <input class="fi" id="dev-new-devpwd" type="password" placeholder="Nouveau code dev (min 8)" maxlength="64" style="margin-bottom:0">
+          </div>
+          <div>
+            <label class="fl">Confirmer</label>
+            <input class="fi" id="dev-new-devpwd2" type="password" placeholder="Confirmer" maxlength="64" style="margin-bottom:0">
+          </div>
+        </div>
+        <div style="margin-top:10px">
+          <button class="btn-blue" onclick="changeDevPassword()" style="width:100%">💾 CHANGER LE CODE DÉVELOPPEUR</button>
+        </div>
+      </div>
+
+      <div class="sec-title" style="color:#f09595;border-bottom-color:rgba(226,75,74,0.2);font-size:8px">ZONE DANGEREUSE</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn-no" onclick="resetCurrentData()" style="flex:1;min-width:140px">🗑 RESET INSCRIPTIONS</button>
+        <button class="btn-del" onclick="deleteCurrentTournament()" style="flex:1;min-width:140px">⚠ SUPPRIMER CE TOURNOI</button>
+      </div>
+
+      <!-- ── GESTION DES RÉCOMPENSES (DEV) ── -->
+      <div class="sec-title" style="color:var(--yellow);border-bottom-color:rgba(239,159,39,0.3);margin-top:20px;font-size:8px">
+        🏅 RÉCOMPENSES & LIVRAISON <span class="dev-badge" style="background:rgba(239,159,39,0.1);color:var(--yellow);border-color:rgba(239,159,39,0.3)">DEV ONLY</span>
+      </div>
+      <div class="info-box" style="background:rgba(239,159,39,0.06);border-color:rgba(239,159,39,0.2);color:var(--yellow);margin-bottom:12px">
+        <div class="title">📋 PROCESSUS DE LIVRAISON</div>
+        1. Génère les livraisons depuis le classement final<br>
+        2. Marque comme "Envoyée" après chaque transfert en jeu<br>
+        3. Le joueur confirme la réception depuis son espace<br>
+        4. Une fois toutes les récompenses confirmées → invalide les codes
+      </div>
+
+      <!-- Générer les livraisons -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+        <button class="btn-ok" onclick="generateDeliveries()">
+          ⚡ GÉNÉRER LES LIVRAISONS
+        </button>
+        <button class="btn-no" id="btn-invalidate-codes" onclick="doInvalidateCodes()" style="display:none">
+          🔒 INVALIDER LES CODES
+        </button>
+      </div>
+      <div id="invalidation-status" style="font-size:10px;color:var(--text3);font-family:'Orbitron',sans-serif;letter-spacing:1px;margin-bottom:8px"></div>
+
+      <!-- Liste des livraisons -->
+      <div id="deliveries-list"><div class="empty" style="font-size:9px;padding:12px">AUCUNE LIVRAISON GÉNÉRÉE</div></div>
+    </div>
+
+    <!-- Bouton accès dev -->
+    <div style="margin-top:16px;text-align:center" id="dev-unlock-section">
+      <button class="btn-secondary" onclick="showDevUnlock()" style="font-size:8px;opacity:.5">🛠 CODE DÉVELOPPEUR</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- Modal code dev -->
+<div id="dev-modal" style="display:none;position:fixed;inset:0;background:rgba(6,6,9,0.95);z-index:9998;display:none;align-items:center;justify-content:center">
+  <div class="lock-box">
+    <div class="lock-icon">🛠</div>
+    <div class="lock-title" style="color:var(--blue)">CODE DÉVELOPPEUR</div>
+    <div class="lock-sub">Accès restreint · Fonctions avancées</div>
+    <input class="fi" type="password" id="dev-pwd" placeholder="Code développeur" maxlength="32"
+      style="text-align:center;letter-spacing:4px" onkeydown="if(event.key==='Enter') unlockDev()">
+    <button class="btn-blue" style="width:100%" onclick="unlockDev()">DÉVERROUILLER</button>
+    <div class="lock-err" id="dev-err"></div>
+    <button class="btn-secondary" style="margin-top:10px;width:100%" onclick="closeDevModal()">ANNULER</button>
+  </div>
+</div>
+
+<script>
+// ── INIT ──────────────────────────────────────────────────────────────────────
+// Sync Firebase au démarrage
+migrateIfNeeded();
+dbSync().then(() => { migrateIfNeeded(); });
+initDarkMode();
+resumeGlobalMusic();
+(function(){ const b=document.getElementById('mute-btn'); if(b) b.textContent=getMuteState()?'🔇':'🔊'; })();
+
+let _currentTournamentId = getActiveTournamentId();
+
+// ── AUTH ADMIN ────────────────────────────────────────────────────────────────
+async function unlock(){
+  const pwd = document.getElementById('lock-pwd').value;
+  if(!pwd){ document.getElementById('lock-err').textContent = 'Mot de passe requis.'; return; }
+
+  const t = getTournamentById(_currentTournamentId) || getSettings();
+  const ok = await checkAdminPassword(pwd, t);
+
+  if(ok){
+    setAuth('admin');
+    document.getElementById('lock-screen').style.display = 'none';
+    document.getElementById('main-content').style.display = 'block';
+    applyHero(t);
+    initPage();
+    notify('✓ Accès autorisé','ok');
+  } else {
+    document.getElementById('lock-err').textContent = 'Mot de passe incorrect.';
+    document.getElementById('lock-pwd').value = '';
+  }
+}
+
+function verrouiller(){
+  clearAuth('admin');
+  clearDevAuth();
+  location.href = 'index.html';
+}
+
+(function(){
+  if(isAuthed('admin')){
+    document.getElementById('lock-screen').style.display = 'none';
+    document.getElementById('main-content').style.display = 'block';
+    const t = getTournamentById(_currentTournamentId) || getSettings();
+    applyHero(t);
+    initPage();
+    if(isDevAuthed()) showDevSection();
+  }
+})();
+
+// ── INIT PAGE ─────────────────────────────────────────────────────────────────
+function initPage(){
+  buildTournamentSelector();
+  loadRoomIdFields();
+  render();
+  renderAnnouncementsAdmin();
+}
+
+function buildTournamentSelector(){
+  const sel = document.getElementById('t-selector');
+  const list = getTournaments();
+  sel.innerHTML = list.map(t =>
+    `<option value="${t.id}" ${t.id === _currentTournamentId ? 'selected' : ''}>${t.name} · ${getStatusLabel(getTournamentStatus(t)).label}</option>`
+  ).join('');
+  if(!list.find(t=>t.id===_currentTournamentId) && list.length){
+    _currentTournamentId = list[0].id;
+    setActiveTournamentId(_currentTournamentId);
+  }
+}
+
+function switchTournament(id){
+  _currentTournamentId = id;
+  setActiveTournamentId(id);
+  const t = getTournamentById(id);
+  if(t) applyHero(t);
+  loadRoomIdFields();
+  render();
+}
+
+// ── ROOM ID ───────────────────────────────────────────────────────────────────
+function loadRoomIdFields(){
+  const t = getTournamentById(_currentTournamentId);
+  if(!t) return;
+  document.getElementById('room-id-input').value = t.roomId || '';
+  document.getElementById('next-match-input').value = t.nextMatchDate || '';
+  updateRoomStatus(t);
+}
+
+function updateRoomStatus(t){
+  const el = document.getElementById('room-status');
+  if(!t || !t.roomId){ el.textContent = '— Aucun ID configuré'; return; }
+  if(!t.nextMatchDate){ el.textContent = '⚠ ID défini mais pas de date de match'; return; }
+  const minutesUntil = Math.floor((new Date(t.nextMatchDate) - Date.now()) / 60000);
+  if(minutesUntil > 5) el.textContent = `⏳ L'ID sera visible pour les joueurs dans ${minutesUntil} min`;
+  else if(minutesUntil >= 0) el.textContent = `🟢 ID VISIBLE PAR LES JOUEURS (match dans ${minutesUntil} min)`;
+  else el.textContent = '✓ Match commencé · ID visible';
+}
+
+function saveRoomId(){
+  const t = getTournamentById(_currentTournamentId);
+  if(!t) return;
+  t.roomId = document.getElementById('room-id-input').value.trim();
+  t.nextMatchDate = document.getElementById('next-match-input').value;
+  saveTournament(t);
+  updateRoomStatus(t);
+  notify('✓ Room ID sauvegardé','ok');
+}
+
+// ── RENDER INSCRIPTIONS ───────────────────────────────────────────────────────
+function render(){
+  const data = getData(_currentTournamentId);
+  const pending = data.pending || [];
+  const approved = data.approved || [];
+  const rejected = data.rejected || [];
+  document.getElementById('pending-count').textContent = pending.length;
+  renderSection('pending-list', pending, 'pending');
+  renderSection('approved-list', approved, 'approved');
+  renderSection('rejected-list', rejected, 'rejected');
+  renderAdminClaims();
+}
+
+function renderAdminClaims(){
+  const claims = getClaims(_currentTournamentId).filter(c => c.status === 'pending');
+  const el = document.getElementById('claims-admin-list');
+  const badge = document.getElementById('claims-count');
+  if(badge) badge.textContent = claims.length ? '('+claims.length+')' : '';
+
+  if(!claims.length){
+    el.innerHTML = '<div class="empty" style="padding:10px;font-size:9px">AUCUNE RÉCLAMATION EN ATTENTE ✓</div>';
+    return;
+  }
+  el.innerHTML = claims.map(c => `
+  <div class="adm-card">
+    <div class="adm-top">
+      <div>
+        <div class="adm-ps">${c.playerName} · ${c.squad}</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:2px">${c.id} · Match: ${c.matchId||'—'} · ${c.date||''}</div>
+      </div>
+      <span class="badge badge-pending">EN ATTENTE</span>
+    </div>
+    <div style="font-size:12px;color:var(--text2);margin-bottom:8px;line-height:1.5">${c.reason}</div>
+    ${c.proof ? `<div style="margin-bottom:8px"><img src="${c.proof}" style="max-width:100%;max-height:180px;border-radius:6px;border:1px solid var(--border)" alt="Preuve"></div>` : ''}
+    <label class="fl" style="margin-bottom:4px">Réponse au joueur</label>
+    <input class="fi" id="adm-reply-${c.id}" placeholder="Ta réponse..." style="margin-bottom:8px">
+    <div class="adm-acts">
+      <button class="btn-ok" onclick="adminRespondClaim('${c.id}','accepted')" style="flex:1">✓ ACCEPTER</button>
+      <button class="btn-no" onclick="adminRespondClaim('${c.id}','rejected')" style="flex:1">✕ REFUSER</button>
+    </div>
+  </div>`).join('');
+}
+
+function adminRespondClaim(claimId, status){
+  const reply = (document.getElementById('adm-reply-'+claimId)||{}).value || '';
+  const claims = getClaims(_currentTournamentId);
+  const c = claims.find(x => x.id === claimId); if(!c) return;
+  c.status = status; c.adminReply = reply;
+  saveClaim(_currentTournamentId, c);
+  render();
+  notify('✓ Réclamation '+(status==='accepted'?'acceptée':'refusée'), status==='accepted'?'ok':'err');
+}
+
+function renderSection(elId, list, type){
+  const el = document.getElementById(elId);
+  if(!list.length){ el.innerHTML = '<div class="empty" style="padding:14px;font-size:9px">VIDE</div>'; return; }
+
+  el.innerHTML = list.map(p => {
+    const members = (p.members||[]).map(m => {
+      const name = typeof m === 'object' ? m.name : m;
+      const fid = typeof m === 'object' ? m.ffid : '';
+      return name && name !== '—' ? name + (fid ? ' ['+fid+']' : '') : null;
+    }).filter(Boolean).join(', ') || 'Aucun';
+
+    let actions = '';
+    if(type === 'pending'){
+      actions = `
+        <button class="btn-ok" onclick="approuver('${p.ref}')">✓ APPROUVER</button>
+        <button class="btn-no" onclick="rejeter('${p.ref}')">✕ REFUSER</button>
+        <button class="btn-del" onclick="supprimer('${p.ref}','pending')" title="Supprimer">🗑</button>`;
+    } else if(type === 'approved'){
+      actions = `
+        <button class="btn-blue" onclick="imprimer('${p.ref}')">🖨 AFFICHE</button>
+        <button class="btn-del" onclick="supprimer('${p.ref}','approved')" title="Supprimer">🗑</button>`;
+    } else {
+      actions = `<button class="btn-del" onclick="supprimer('${p.ref}','rejected')">🗑</button>`;
+    }
+
+    const badge = type==='pending'
+      ? '<span class="badge badge-pending">EN ATTENTE</span>'
+      : type==='approved'
+      ? '<span class="badge badge-ok">VALIDÉ</span>'
+      : '<span class="badge badge-rejected">REFUSÉ</span>';
+
+    const ffidBadge = p.ffid
+      ? `<span style="font-family:'Orbitron',sans-serif;font-size:9px;color:var(--yellow);background:rgba(239,159,39,0.1);padding:2px 7px;border-radius:3px">ID: ${p.ffid}</span>`
+      : '';
+
+    const playerCodeBadge = p.playerCode
+      ? `<span style="font-family:'Orbitron',sans-serif;font-size:8px;color:var(--blue);background:var(--blue-bg);border:1px solid var(--blue-border);padding:2px 7px;border-radius:3px" title="Code espace joueur">${p.playerCode}</span>`
+      : '';
+
+    return `
+    <div class="adm-card">
+      <div class="adm-top">
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+          <div class="adm-ps">${p.ps}</div>
+          ${ffidBadge}
+          ${playerCodeBadge}
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">${badge}<span style="font-size:10px;color:var(--text3);font-family:'Orbitron',sans-serif">${p.ref}</span></div>
+      </div>
+      <div class="adm-info">
+        <div>Squad <span>${p.sq}</span></div>
+        <div>Contact <span>${p.ct}</span></div>
+        <div>Email <span>${p.em}</span></div>
+        <div>Membres <span>${members}</span></div>
+        <div>Date <span style="font-family:'Rajdhani',sans-serif;color:var(--text3)">${p.date}</span></div>
+        <div>Statut <span>${p.status}</span></div>
+      </div>
+      <div class="adm-acts">${actions}</div>
+    </div>`;
+  }).join('');
+}
+
+
+// ── ACTIONS ────────────────────────────────────────────────────────────────────
+function approuver(ref){
+  const data = getData(_currentTournamentId);
+  const idx = data.pending.findIndex(p => p.ref === ref);
+  if(idx === -1) return;
+  const entry = data.pending.splice(idx, 1)[0];
+  entry.status = 'approved';
+  data.approved.push(entry);
+  saveData(data, _currentTournamentId);
+  render(); notify('✓ Inscription approuvée','ok');
+
+  // Envoyer la fiche de validation par email au joueur (template 3)
+  if(EMAIL_CONFIG.enabled){
+    const t = getTournamentById(_currentTournamentId) || getSettings();
+    const ficheHtml = buildFicheHtml(entry, t);
+    const dateT = t.date ? new Date(t.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'}) : 'Date à confirmer';
+    const members = (entry.members||[]).map(m=>typeof m==='object'?m:{name:m,ffid:''})
+                     .filter(m=>m.name&&m.name!=='—')
+                     .map(m=>m.name+(m.ffid?' ['+m.ffid+']':'')).join(', ') || 'Aucun';
+    sendEmail('validation_joueur', entry.em, {
+      to_name:          entry.ps,
+      squad_name:       entry.sq,
+      ref_code:         entry.ref,
+      player_code:      entry.playerCode,
+      tournament_name:  t.name,
+      tournament_date:  dateT,
+      tournament_lieu:  t.lieu,
+      tournament_format:t.format,
+      ff_id:            entry.ffid || '—',
+      membres:          members,
+      fiche_html:       ficheHtml
+    }).then(ok => {
+      if(ok) notify('✓ Fiche de validation envoyée à '+entry.em,'ok');
+      else   notify('⚠ Email non envoyé (EmailJS désactivé ou non configuré)','info');
+    });
+  }
+}
+function rejeter(ref){
+  const data = getData(_currentTournamentId);
+  const idx = data.pending.findIndex(p => p.ref === ref);
+  if(idx === -1) return;
+  const entry = data.pending.splice(idx, 1)[0];
+  entry.status = 'rejected';
+  data.rejected.push(entry);
+  saveData(data, _currentTournamentId);
+  render(); notify('✗ Inscription refusée','err');
+
+  // Notifier le joueur par email
+  if(EMAIL_CONFIG.enabled){
+    const t = getTournamentById(_currentTournamentId) || getSettings();
+    sendEmail('refus_joueur', entry.em, {
+      to_name:         entry.ps,
+      squad_name:      entry.sq,
+      ref_code:        entry.ref,
+      player_code:     '—',
+      tournament_name: t.name,
+      tournament_date: '—',
+      tournament_lieu: t.lieu,
+      tournament_format:t.format,
+      ff_id:           entry.ffid || '—',
+      membres:         '—',
+      fiche_html:      '<p style="color:#f09595">Ton inscription a été refusée par l\'admin. Contacte l\'organisateur pour plus d\'infos.</p>'
+    }).then(ok => {
+      if(ok) notify('✓ Email de refus envoyé à '+entry.em,'ok');
+    });
+  }
+}
+function supprimer(ref, liste){
+  if(!confirm('Supprimer définitivement ?')) return;
+  const data = getData(_currentTournamentId);
+  const arr = data[liste] || [];
+  const i = arr.findIndex(p => p.ref === ref);
+  if(i > -1) arr.splice(i, 1);
+  saveData(data, _currentTournamentId);
+  render(); notify('✓ Supprimé','ok');
+}
+
+// ── IMPRESSION ─────────────────────────────────────────────────────────────────
+function imprimer(ref){
+  const data = getData(_currentTournamentId);
+  const all = [...(data.pending||[]),...(data.approved||[]),...(data.rejected||[])];
+  const p = all.find(x => x.ref === ref);
+  if(!p) return;
+  const t = getTournamentById(_currentTournamentId) || getSettings();
+
+  const w = window.open('','_blank','width=700,height=950');
+  const members = (p.members||[]).map(m => typeof m==='object' ? m : {name:m,ffid:''});
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
+  <title>Affiche ${p.ps}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:#060609;display:flex;justify-content:center;padding:24px;font-family:'Rajdhani',sans-serif;color:#fff}
+    .poster{width:580px;background:#0a0a0f;border:1px solid #ff440033;border-radius:16px;padding:32px 28px}
+    .tag{display:inline-block;background:#0f3a1e;color:#5DCAA5;border:1px solid #1d9e7544;font-family:'Orbitron',sans-serif;font-size:10px;padding:5px 16px;border-radius:3px;letter-spacing:2px;margin-bottom:14px}
+    .ttl{font-family:'Orbitron',sans-serif;font-size:36px;font-weight:900;text-align:center;line-height:1;margin-bottom:4px}
+    .ttl span{color:#ff4400}
+    .sub{font-size:11px;letter-spacing:6px;color:#ff8844;text-align:center;font-family:'Orbitron',sans-serif;margin-bottom:18px}
+    .div{height:1px;background:linear-gradient(90deg,transparent,#ff4400,transparent);margin:14px 0}
+    .sec{font-size:9px;letter-spacing:3px;color:#555;font-family:'Orbitron',sans-serif;margin:14px 0 8px}
+    .row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.05);font-size:13px}
+    .rl{color:#777}.rv{color:#fff;font-weight:600;font-family:'Orbitron',sans-serif;font-size:12px}
+    .members{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}
+    .mc{background:rgba(255,255,255,0.04);border:1px solid rgba(255,68,0,0.12);border-radius:6px;padding:9px 11px;font-size:12px;color:#ccc}
+    .mc-id{font-size:10px;color:#555;font-family:'Orbitron',sans-serif;margin-top:2px}
+    .ref-box{background:rgba(255,68,0,0.08);border:2px solid rgba(255,68,0,0.35);border-radius:10px;padding:18px;text-align:center;margin:18px 0}
+    .ref-n{font-family:'Orbitron',sans-serif;font-size:28px;color:#ff4400;letter-spacing:6px;margin:6px 0}
+    .ref-l{font-size:9px;color:#666;letter-spacing:3px;font-family:'Orbitron',sans-serif}
+    .footer{text-align:center;margin-top:18px;font-size:9px;color:#333;font-family:'Orbitron',sans-serif;letter-spacing:2px}
+    @media print{body{padding:0}@page{margin:0;size:A4}}
+  </style>
+</head><body>
+  <div class="poster">
+    <div style="text-align:center;margin-bottom:6px"><span class="tag">✓ INSCRIPTION VALIDÉE</span></div>
+    <div class="ttl">${t.name.split(' ').map((w,i)=>i===1?'<span>'+w+'</span>':w).join(' ')}</div>
+    <div class="sub">${t.sub}</div>
+    <div class="div"></div>
+    <div class="sec">INFORMATIONS DE LA SQUAD</div>
+    <div class="row"><span class="rl">Capitaine</span><span class="rv">${p.ps}</span></div>
+    <div class="row"><span class="rl">ID Free Fire</span><span class="rv" style="color:#EF9F27">${p.ffid||'—'}</span></div>
+    <div class="row"><span class="rl">Nom de la squad</span><span class="rv">${p.sq}</span></div>
+    <div class="row"><span class="rl">Contact</span><span class="rv">${p.ct}</span></div>
+    <div class="row"><span class="rl">Lieu</span><span class="rv">${t.lieu}</span></div>
+    <div class="row"><span class="rl">Format</span><span class="rv">${t.format}</span></div>
+    <div class="sec" style="margin-top:16px">MEMBRES DE LA SQUAD</div>
+    <div class="members">
+      <div class="mc" style="border-color:rgba(255,170,0,0.3)">
+        <span style="color:#EF9F27;font-size:8px;font-family:'Orbitron',sans-serif;letter-spacing:1px">CAPITAINE</span><br>
+        <strong>${p.ps}</strong>
+        ${p.ffid ? '<div class="mc-id">ID: '+p.ffid+'</div>' : ''}
+      </div>
+      ${members.filter(m=>m.name&&m.name!=='—').map(m=>`<div class="mc"><strong>${m.name}</strong>${m.ffid?'<div class="mc-id">ID: '+m.ffid+'</div>':''}</div>`).join('')}
+    </div>
+    <div class="ref-box">
+      <div class="ref-l">CODE DE RÉFÉRENCE</div>
+      <div class="ref-n">${p.ref}</div>
+      <div style="font-size:11px;color:#555;margin-top:4px;font-family:'Rajdhani',sans-serif">Présente ce code le jour du tournoi</div>
+    </div>
+    <div class="div"></div>
+    <div class="row"><span class="rl">Inscrit le</span><span class="rv" style="font-family:'Rajdhani',sans-serif;color:#555;font-weight:400">${p.date}</span></div>
+    <div class="row"><span class="rl">1ère place</span><span class="rv" style="color:#EF9F27">${t.p1}</span></div>
+    <div class="footer">TOURNAMENT MANAGER · FREE FIRE · Organisé par GΛΞINS_404 · BOOYAH!</div>
+  </div>
+  <script>window.onload=()=>{window.print()}<\/script>
+  </body></html>`);
+  w.document.close();
+  notify('✓ Affiche générée','ok');
+}
+
+// ── GÉNÉRATION HTML FICHE (pour email + impression) ─────────────
+function buildFicheHtml(p, t){
+  const members = (p.members||[]).map(m=>typeof m==='object'?m:{name:m,ffid:''});
+  const dateT = t.date ? new Date(t.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'}) : 'Date à confirmer';
+  const membersHtml = members.filter(m=>m.name&&m.name!=='—').map(m=>`
+    <tr>
+      <td style="padding:6px 10px;border-bottom:1px solid #1a1a2a;color:#ccc">${m.name}</td>
+      <td style="padding:6px 10px;border-bottom:1px solid #1a1a2a;color:#EF9F27;font-family:monospace">${m.ffid||'—'}</td>
+    </tr>`).join('');
+
+  return `
+  <div style="font-family:'Segoe UI',Arial,sans-serif;background:#060609;color:#fff;max-width:600px;margin:0 auto;border:1px solid #ff440033;border-radius:12px;overflow:hidden">
+    <div style="background:linear-gradient(135deg,#0a0a0f 0%,#1a0a00 100%);padding:28px 24px;text-align:center;border-bottom:1px solid #ff440033">
+      <div style="display:inline-block;background:#0f3a1e;color:#5DCAA5;border:1px solid #1d9e7544;font-size:10px;padding:4px 14px;border-radius:3px;letter-spacing:2px;margin-bottom:12px">✓ INSCRIPTION VALIDÉE</div>
+      <div style="font-size:28px;font-weight:900;letter-spacing:2px">${t.name.split(' ')[0]} <span style="color:#ff4400">${t.name.split(' ').slice(1).join(' ')}</span></div>
+      <div style="font-size:10px;letter-spacing:4px;color:#ff8844;margin-top:4px">${t.sub}</div>
+    </div>
+    <div style="padding:20px 24px">
+      <table style="width:100%;border-collapse:collapse;margin-bottom:16px">
+        <tr><td style="padding:6px 10px;border-bottom:1px solid #1a1a2a;color:#888;font-size:12px">Capitaine</td><td style="padding:6px 10px;border-bottom:1px solid #1a1a2a;color:#ff8844;font-weight:700">${p.ps}</td></tr>
+        <tr><td style="padding:6px 10px;border-bottom:1px solid #1a1a2a;color:#888;font-size:12px">ID Free Fire</td><td style="padding:6px 10px;border-bottom:1px solid #1a1a2a;color:#EF9F27;font-family:monospace">${p.ffid||'—'}</td></tr>
+        <tr><td style="padding:6px 10px;border-bottom:1px solid #1a1a2a;color:#888;font-size:12px">Nom de la squad</td><td style="padding:6px 10px;border-bottom:1px solid #1a1a2a;color:#fff;font-weight:700">${p.sq}</td></tr>
+        <tr><td style="padding:6px 10px;border-bottom:1px solid #1a1a2a;color:#888;font-size:12px">Contact WhatsApp</td><td style="padding:6px 10px;border-bottom:1px solid #1a1a2a;color:#fff">${p.ct}</td></tr>
+        <tr><td style="padding:6px 10px;border-bottom:1px solid #1a1a2a;color:#888;font-size:12px">Date du tournoi</td><td style="padding:6px 10px;border-bottom:1px solid #1a1a2a;color:#fff">${dateT}</td></tr>
+        <tr><td style="padding:6px 10px;border-bottom:1px solid #1a1a2a;color:#888;font-size:12px">Lieu</td><td style="padding:6px 10px;border-bottom:1px solid #1a1a2a;color:#fff">${t.lieu}</td></tr>
+        <tr><td style="padding:6px 10px;border-bottom:1px solid #1a1a2a;color:#888;font-size:12px">Format</td><td style="padding:6px 10px;border-bottom:1px solid #1a1a2a;color:#fff">${t.format}</td></tr>
+      </table>
+      ${membersHtml ? `<div style="font-size:10px;letter-spacing:2px;color:#555;margin-bottom:8px">MEMBRES DE LA SQUAD</div>
+      <table style="width:100%;border-collapse:collapse;margin-bottom:16px">
+        <tr><th style="padding:6px 10px;text-align:left;color:#555;font-size:11px;font-weight:400">Pseudo</th><th style="padding:6px 10px;text-align:left;color:#555;font-size:11px;font-weight:400">ID Free Fire</th></tr>
+        ${membersHtml}
+      </table>` : ''}
+      <div style="background:rgba(255,68,0,0.08);border:2px solid rgba(255,68,0,0.35);border-radius:10px;padding:20px;text-align:center;margin-bottom:16px">
+        <div style="font-size:10px;letter-spacing:3px;color:#666">CODE DE RÉFÉRENCE</div>
+        <div style="font-size:26px;color:#ff4400;letter-spacing:6px;font-weight:900;margin:8px 0">${p.ref}</div>
+        <div style="font-size:11px;color:#555">Présente ce code le jour du tournoi</div>
+      </div>
+      <div style="background:rgba(133,183,235,0.08);border:1px solid rgba(133,183,235,0.2);border-radius:8px;padding:16px;text-align:center;margin-bottom:16px">
+        <div style="font-size:10px;letter-spacing:2px;color:#85B7EB;margin-bottom:6px">🎮 TON CODE ESPACE JOUEUR</div>
+        <div style="font-size:18px;color:#85B7EB;letter-spacing:4px;font-weight:900;font-family:monospace">${p.playerCode}</div>
+        <div style="font-size:11px;color:#555;margin-top:6px">Utilise ce code sur la page "Mon Espace" du site pour suivre tes matchs et récompenses</div>
+      </div>
+      <div style="text-align:center;padding-top:12px;border-top:1px solid #1a1a2a">
+        <div style="font-size:9px;color:#333;letter-spacing:2px">CS HEADSHOT SQUAD · FREE FIRE TOURNAMENT · Organisé par GΛΞINS_404 · BOOYAH!</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ── ANNONCES & SONDAGES ──────────────────────────────────────────────────────
+function togglePollOptions(type) {
+  const wrap = document.getElementById('poll-options-wrap');
+  if (wrap) wrap.style.display = type === 'poll' ? 'block' : 'none';
+}
+
+function createAnnouncement() {
+  const type  = document.getElementById('ann-type').value;
+  const title = document.getElementById('ann-title').value.trim();
+  const body  = document.getElementById('ann-body').value.trim();
+
+  if (!title) { notify('⚠ Titre requis', 'err'); return; }
+
+  const ann = {
+    id:        genAnnouncementId(),
+    type,
+    title,
+    body,
+    active:    true,
+    votes:     {},
+    createdAt: new Date().toLocaleString('fr-FR')
+  };
+
+  if (type === 'poll') {
+    const rawOpts = document.getElementById('ann-options').value.trim();
+    ann.options = rawOpts.split('\n').map(s=>s.trim()).filter(Boolean);
+    if (ann.options.length < 2) { notify('⚠ Au moins 2 options pour un sondage', 'err'); return; }
+  }
+
+  saveAnnouncement(ann);
+  // Reset
+  document.getElementById('ann-title').value  = '';
+  document.getElementById('ann-body').value   = '';
+  document.getElementById('ann-options').value = '';
+  renderAnnouncementsAdmin();
+  notify('✓ Annonce publiée !', 'ok');
+}
+
+function renderAnnouncementsAdmin() {
+  const list = getAnnouncements();
+  const el   = document.getElementById('announcements-admin-list');
+  if (!el) return;
+  if (!list.length) { el.innerHTML = '<div class="empty" style="font-size:9px;padding:10px">AUCUNE ANNONCE</div>'; return; }
+
+  const typeLabel = { info:'ℹ️ Info', warning:'⚠️ Avertissement', poll:'📊 Sondage' };
+  el.innerHTML = [...list].reverse().map(a => {
+    const totalVotes = a.type==='poll' ? Object.values(a.votes||{}).reduce((s,v)=>s+v,0) : 0;
+    const optionsHtml = (a.type==='poll' && a.options) ?
+      a.options.map((o,i)=>`<div style="font-size:11px;color:var(--text3);padding:2px 0">• ${o} : <strong style="color:var(--text2)">${(a.votes||{})[i]||0} vote${((a.votes||{})[i]||0)>1?'s':''}</strong></div>`).join('') : '';
+
+    return `
+    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:8px">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-bottom:8px">
+        <div>
+          <div style="font-family:'Orbitron',sans-serif;font-size:11px;color:var(--text)">${a.title}</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:2px">${typeLabel[a.type]||a.type} · ${a.createdAt}${totalVotes?' · '+totalVotes+' vote(s)':''}</div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <label style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text3);cursor:pointer">
+            <input type="checkbox" ${a.active!==false?'checked':''} onchange="toggleAnnouncement('${a.id}',this.checked)" style="accent-color:var(--red)"> Visible
+          </label>
+          <button class="btn-del" onclick="removeAnnouncement('${a.id}')" style="font-size:9px;padding:5px 8px">🗑</button>
+        </div>
+      </div>
+      ${a.body ? `<div style="font-size:12px;color:var(--text2)">${a.body}</div>` : ''}
+      ${optionsHtml}
+    </div>`;
+  }).join('');
+}
+
+function toggleAnnouncement(id, active) {
+  const ann = getAnnouncements().find(a=>a.id===id); if (!ann) return;
+  ann.active = active; saveAnnouncement(ann);
+  notify(active ? '✓ Annonce visible' : '✓ Annonce masquée', 'ok');
+}
+function removeAnnouncement(id) {
+  if (!confirm('Supprimer cette annonce ?')) return;
+  deleteAnnouncement(id); renderAnnouncementsAdmin();
+  notify('✓ Annonce supprimée', 'ok');
+}
+
+// ── CODE DÉVELOPPEUR ──────────────────────────────────────────────────────────
+function showDevUnlock(){
+  const modal = document.getElementById('dev-modal');
+  modal.style.display = 'flex';
+}
+function closeDevModal(){
+  document.getElementById('dev-modal').style.display = 'none';
+  document.getElementById('dev-pwd').value = '';
+  document.getElementById('dev-err').textContent = '';
+}
+async function unlockDev(){
+  const pwd = document.getElementById('dev-pwd').value;
+  if(!pwd){ document.getElementById('dev-err').textContent = 'Code requis.'; return; }
+  const ok = await checkDevPassword(pwd);
+  if(ok){
+    setDevAuth();
+    closeDevModal();
+    showDevSection();
+    notify('✓ Accès développeur accordé','ok');
+  } else {
+    document.getElementById('dev-err').textContent = 'Code incorrect.';
+    document.getElementById('dev-pwd').value = '';
+  }
+}
+function showDevSection(){
+  document.getElementById('dev-section').style.display = 'block';
+  document.getElementById('dev-unlock-section').style.display = 'none';
+  renderAllTournaments();
+  renderDeliveries();
+}
+
+// ── GESTION DES TOURNOIS (DEV) ────────────────────────────────────────────────
+function createTournament(){
+  const name = document.getElementById('new-name').value.trim();
+  if(!name){ notify('⚠ Nom requis','err'); return; }
+
+  const t = {
+    ...getDefaultTournament(),
+    id: genTournamentId(),
+    name,
+    sub: document.getElementById('new-sub').value.trim() || 'SQUAD · FREE FIRE',
+    date: document.getElementById('new-date').value,
+    lieu: document.getElementById('new-lieu').value.trim() || 'En ligne · Bénin',
+    format: document.getElementById('new-format').value.trim() || '4 vs 4 · Headshot only',
+    maxTeams: parseInt(document.getElementById('new-max').value) || 16,
+    pt: document.getElementById('new-pt').value.trim() || '500 000 FCFA',
+    type: document.getElementById('new-type').value,
+    status: 'upcoming',
+    createdAt: new Date().toISOString()
+  };
+
+  saveTournament(t);
+  buildTournamentSelector();
+  renderAllTournaments();
+  // Vider formulaire
+  ['new-name','new-sub','new-date','new-lieu','new-format','new-max','new-pt'].forEach(id=>{
+    document.getElementById(id).value='';
+  });
+  notify('✓ Tournoi "'+t.name+'" créé !','ok');
+}
+
+function renderAllTournaments(){
+  const list = getTournaments();
+  const el = document.getElementById('all-tournaments-list');
+  if(!list.length){ el.innerHTML = '<div class="empty" style="font-size:9px;padding:14px">AUCUN TOURNOI</div>'; return; }
+
+  el.innerHTML = list.map(t => {
+    const status = getTournamentStatus(t);
+    const sl = getStatusLabel(status);
+    const data = getData(t.id);
+    const total = (data.pending||[]).length + (data.approved||[]).length + (data.rejected||[]).length;
+
+    return `
+    <div class="t-card">
+      <div class="t-card-head">
+        <div>
+          <div class="t-card-name">${t.name}</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:3px">${t.id} · ${t.type === 'paid' ? '💰 Payant' : '🎮 Gratuit'}</div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+          <span class="badge badge-${status}">${sl.icon} ${sl.label}</span>
+          <div class="t-card-acts">
+            ${status !== 'ended'
+              ? `<button class="btn-no" onclick="endTournament('${t.id}')" style="font-size:8px;padding:6px 10px">⏹ TERMINER</button>`
+              : `<button class="btn-ok" onclick="reopenTournament('${t.id}')" style="font-size:8px;padding:6px 10px">↩ ROUVRIR</button>`
+            }
+            <button class="btn-del" onclick="confirmDelete('${t.id}')" style="font-size:8px;padding:6px 10px">🗑 SUPPR.</button>
+          </div>
+        </div>
+      </div>
+      <div class="t-card-meta">
+        <div><strong>${total}</strong>inscriptions</div>
+        <div><strong>${t.maxTeams}</strong>max équipes</div>
+        <div><strong>${t.pt||'—'}</strong>prize pool</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function endTournament(id){
+  // Vérifier que les récompenses sont distribuées avant de terminer
+  const check = canEndTournament(id);
+  if (!check.ok) {
+    notify('⚠ ' + check.reason, 'err');
+    alert('⚠️ Impossible de terminer le tournoi : ' + check.reason);
+    return;
+  }
+  if(!confirm('Marquer ce tournoi comme TERMINÉ ?')) return;
+  const t = getTournamentById(id);
+  if(t){ t.status = 'ended'; saveTournament(t); }
+  renderAllTournaments(); buildTournamentSelector(); notify('✓ Tournoi terminé','ok');
+}
+function reopenTournament(id){
+  const t = getTournamentById(id);
+  if(t){ t.status = 'upcoming'; saveTournament(t); }
+  renderAllTournaments(); buildTournamentSelector(); notify('✓ Tournoi rouvert','ok');
+}
+function confirmDelete(id){
+  const t = getTournamentById(id);
+  if(!t) return;
+  if(!confirm('⚠️ SUPPRIMER le tournoi "'+t.name+'" et TOUTES ses inscriptions ? IRRÉVERSIBLE.')) return;
+  deleteTournament(id);
+  renderAllTournaments(); buildTournamentSelector(); notify('✓ Tournoi supprimé','ok');
+}
+function resetCurrentData(){
+  if(!confirm('Supprimer TOUTES les inscriptions de ce tournoi ?')) return;
+  saveData({pending:[],approved:[],rejected:[]}, _currentTournamentId);
+  render(); notify('✓ Inscriptions effacées','ok');
+}
+function deleteCurrentTournament(){
+  confirmDelete(_currentTournamentId);
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// RÉCOMPENSES — LIVRAISON (DEV ONLY)
+// ══════════════════════════════════════════════════════════════════════════════
+function generateDeliveries() {
+  const t = getTournamentById(_currentTournamentId);
+  if (!t) return;
+  const rewards  = t.rewards || [];
+  const matches  = t.matches || [];
+  const data     = getData(_currentTournamentId);
+  const approved = data.approved || [];
+
+  if (!rewards.length) { notify('⚠ Aucune récompense configurée dans Paramètres', 'err'); return; }
+
+  // Construire classement global (par wins puis kills)
+  const stats = {};
+  matches.forEach(m => {
+    (m.results || []).forEach(r => {
+      if (!r.squad) return;
+      if (!stats[r.squad]) stats[r.squad] = { squad: r.squad, kills: 0, wins: 0 };
+      stats[r.squad].kills += (r.kills || 0);
+      if (r.isWinner) stats[r.squad].wins++;
+    });
+  });
+
+  const ranked = Object.values(stats).sort((a, b) => b.wins - a.wins || b.kills - a.kills);
+
+  if (!ranked.length) { notify('⚠ Aucun match joué — impossible de générer', 'err'); return; }
+
+  if (!confirm(`Générer les livraisons pour les ${Math.min(rewards.length, ranked.length)} premières équipes ?`)) return;
+
+  const existing = getRewardDeliveries(_currentTournamentId);
+
+  rewards.forEach((reward, i) => {
+    const squad = ranked[i];
+    if (!squad) return;
+
+    // Trouver le joueur correspondant
+    const player = approved.find(p => p.sq === squad.squad);
+    if (!player && !confirm(`Équipe "${squad.squad}" non inscrite dans les approuvés. Créer quand même ?`)) return;
+
+    // Eviter les doublons
+    const alreadyExists = existing.some(d => d.rank === i + 1 && d.playerCode === (player?.playerCode || squad.squad));
+    if (alreadyExists) return;
+
+    const rt    = getRewardTypeInfo(reward.type);
+    const del   = {
+      id:          genDeliveryId(),
+      tournamentId: _currentTournamentId,
+      rank:        i + 1,
+      rankLabel:   reward.rankLabel || `Place #${i + 1}`,
+      playerCode:  player?.playerCode || '',
+      playerRef:   player?.ref || '',
+      playerName:  player?.ps || squad.squad,
+      ffid:        player?.ffid || '',
+      squad:       squad.squad,
+      type:        reward.type,
+      typeLabel:   rt.label,
+      typeIcon:    rt.icon,
+      qty:         reward.qty || 1,
+      note:        reward.note || '',
+      status:      'pending',
+      sentAt:      null,
+      confirmedAt: null,
+      devNote:     ''
+    };
+    saveRewardDelivery(_currentTournamentId, del);
+  });
+
+  renderDeliveries();
+  notify('✓ Livraisons générées !', 'ok');
+}
+
+function renderDeliveries() {
+  const deliveries = getRewardDeliveries(_currentTournamentId);
+  const el         = document.getElementById('deliveries-list');
+  if (!el) return;
+  checkInvalidationReady();
+
+  if (!deliveries.length) {
+    el.innerHTML = '<div class="empty" style="font-size:9px;padding:12px">AUCUNE LIVRAISON GÉNÉRÉE</div>';
+    return;
+  }
+
+  const statusInfo = {
+    pending:   { label: '⏳ À ENVOYER',    color: 'var(--yellow)',  bg: 'rgba(239,159,39,0.08)' },
+    sent:      { label: '📤 ENVOYÉE',       color: 'var(--blue)',    bg: 'rgba(133,183,235,0.08)' },
+    confirmed: { label: '✅ CONFIRMÉE',     color: 'var(--green)',   bg: 'rgba(93,202,165,0.08)' },
+    custom_pending: { label: '🎁 EN ATTENTE APPROBATION', color: 'var(--yellow)', bg: 'rgba(239,159,39,0.06)' }
+  };
+
+  el.innerHTML = deliveries.sort((a, b) => a.rank - b.rank).map(d => {
+    const si  = statusInfo[d.status] || statusInfo.pending;
+    const medal = ['🥇', '🥈', '🥉'][d.rank - 1] || `#${d.rank}`;
+
+    return `
+    <div style="background:${si.bg};border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:12px;margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:6px;margin-bottom:8px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:18px">${medal}</span>
+          <div>
+            <div style="font-family:'Orbitron',sans-serif;font-size:11px;color:var(--text)">${d.playerName}</div>
+            <div style="font-size:10px;color:var(--text3)">${d.squad} · ID: ${d.ffid || '—'}</div>
+          </div>
+        </div>
+        <span style="font-family:'Orbitron',sans-serif;font-size:9px;color:${si.color};letter-spacing:1px">${si.label}</span>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+        <div style="font-size:12px;color:var(--text2)">
+          ${d.typeIcon} ${d.typeLabel} × ${d.qty}
+          ${d.note ? `<span style="color:var(--text3);font-size:11px"> · ${d.note}</span>` : ''}
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          ${d.status === 'pending' ? `
+            <button class="btn-ok" style="font-size:9px;padding:6px 12px" onclick="markDeliverySent('${d.id}')">📤 MARQUER ENVOYÉE</button>
+          ` : ''}
+          ${d.status === 'sent' ? `
+            <span style="font-size:9px;color:var(--blue);font-family:'Orbitron',sans-serif">En attente confirmation joueur</span>
+            <button class="btn-ok" style="font-size:9px;padding:6px 12px" onclick="forceConfirm('${d.id}')">✓ FORCER CONFIRMATION</button>
+          ` : ''}
+          ${d.status === 'confirmed' ? `
+            <span style="font-size:9px;color:var(--green);font-family:'Orbitron',sans-serif">✓ Lot reçu par le joueur</span>
+          ` : ''}
+          <button class="btn-del" style="font-size:9px;padding:6px 10px" onclick="deleteDelivery('${d.id}')">🗑</button>
+        </div>
+      </div>
+      ${d.devNote ? `<div style="margin-top:6px;font-size:10px;color:var(--text3);font-style:italic">${d.devNote}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function checkInvalidationReady() {
+  const allConfirmed = allRewardsConfirmed(_currentTournamentId);
+  const t            = getTournamentById(_currentTournamentId);
+  const btn          = document.getElementById('btn-invalidate-codes');
+  const statusEl     = document.getElementById('invalidation-status');
+  if (!btn || !statusEl) return;
+
+  if (t && t.codesInvalidated) {
+    btn.style.display = 'none';
+    statusEl.textContent = '✅ Codes invalidés le ' + (t.invalidatedAt || '—');
+    statusEl.style.color = 'var(--green)';
+  } else if (allConfirmed) {
+    btn.style.display = 'block';
+    statusEl.textContent = '✅ Toutes les récompenses confirmées — tu peux invalider les codes';
+    statusEl.style.color = 'var(--green)';
+  } else {
+    btn.style.display = 'none';
+    const deliveries = getRewardDeliveries(_currentTournamentId);
+    const pending    = deliveries.filter(d => d.status !== 'confirmed').length;
+    statusEl.textContent = deliveries.length
+      ? pending + ' récompense(s) en attente de confirmation joueur'
+      : 'Aucune livraison générée';
+    statusEl.style.color = 'var(--text3)';
+  }
+}
+
+function doInvalidateCodes() {
+  if (!confirm('⚠️ Invalider les codes des gagnants ? Cette action est irréversible. Les joueurs ayant reçu leurs récompenses ne pourront plus se connecter pour ce tournoi.')) return;
+  const count = invalidateWinnerCodes(_currentTournamentId);
+  if (count > 0) {
+    notify('✅ ' + count + ' code(s) invalidé(s)', 'ok');
+  } else {
+    notify('⚠ Aucun code à invalider', 'err');
+  }
+  checkInvalidationReady();
+  renderDeliveries();
+}
+
+function markDeliverySent(delId) {
+  const deliveries = getRewardDeliveries(_currentTournamentId);
+  const d = deliveries.find(x => x.id === delId); if (!d) return;
+  d.status = 'sent';
+  d.sentAt = new Date().toLocaleString('fr-FR');
+  saveRewardDelivery(_currentTournamentId, d);
+  renderDeliveries();
+  notify('📤 Marquée comme envoyée — le joueur peut confirmer dans son espace', 'ok');
+}
+
+function forceConfirm(delId) {
+  if (!confirm('Forcer la confirmation de réception ?')) return;
+  const deliveries = getRewardDeliveries(_currentTournamentId);
+  const d = deliveries.find(x => x.id === delId); if (!d) return;
+  d.status = 'confirmed';
+  d.confirmedAt = new Date().toLocaleString('fr-FR');
+  d.devNote = 'Confirmé manuellement par l\'admin';
+  saveRewardDelivery(_currentTournamentId, d);
+  renderDeliveries();
+  notify('✓ Confirmation forcée', 'ok');
+}
+
+function deleteDelivery(delId) {
+  if (!confirm('Supprimer cette livraison ?')) return;
+  const t = getTournamentById(_currentTournamentId); if (!t) return;
+  t.rewardDeliveries = (t.rewardDeliveries || []).filter(d => d.id !== delId);
+  saveTournament(t);
+  renderDeliveries();
+  notify('✓ Livraison supprimée', 'ok');
+}
+
+// ── CHANGEMENT MOT DE PASSE (section dev) ────────────────────────────────────
+async function changeAdminPassword() {
+  const pwd  = document.getElementById('dev-new-pwd').value;
+  const pwd2 = document.getElementById('dev-new-pwd2').value;
+  if (!pwd)         { showPwdToast('Saisis un nouveau mot de passe.','err'); return; }
+  if (pwd.length<6) { showPwdToast('Mot de passe trop court (min 6 caractères).','err'); return; }
+  if (pwd!==pwd2)   { showPwdToast('Les mots de passe ne correspondent pas.','err'); return; }
+  const t = getTournamentById(_currentTournamentId);
+  if (!t) { showPwdToast('Aucun tournoi sélectionné.','err'); return; }
+  t.adminHash = await sha256(pwd);
+  saveTournament(t);
+  document.getElementById('dev-new-pwd').value  = '';
+  document.getElementById('dev-new-pwd2').value = '';
+  showPwdToast('✅ Mot de passe admin changé !','ok');
+  notify('✓ Mot de passe mis à jour','ok');
+}
+async function resetAdminPassword() {
+  if (!confirm('Réinitialiser le mot de passe admin au mot de passe par défaut ?')) return;
+  const t = getTournamentById(_currentTournamentId);
+  if (!t) return;
+  t.adminHash = '';  // vide = utilise le hash par défaut dans shared.js
+  saveTournament(t);
+  showPwdToast('✅ Mot de passe réinitialisé au défaut','ok');
+  notify('✓ Réinitialisé','ok');
+}
+async function changeDevPassword() {
+  const pwd  = document.getElementById('dev-new-devpwd').value;
+  const pwd2 = document.getElementById('dev-new-devpwd2').value;
+  if (!pwd)         { notify('Saisis un nouveau code dev.','err'); return; }
+  if (pwd.length<8) { notify('Code trop court (min 8 caractères).','err'); return; }
+  if (pwd!==pwd2)   { notify('Les codes ne correspondent pas.','err'); return; }
+  lsSet('hsq-dev-hash', await sha256(pwd));
+  document.getElementById('dev-new-devpwd').value  = '';
+  document.getElementById('dev-new-devpwd2').value = '';
+  notify('✓ Code développeur changé !','ok');
+}
+function showPwdToast(msg,type) {
+  const el = document.getElementById('pwd-change-toast');
+  if (!el) return;
+  el.textContent=msg; el.className='toast '+type;
+  setTimeout(()=>{ el.className='toast'; },6000);
+}
+
+</script>
+</body>
+</html>
